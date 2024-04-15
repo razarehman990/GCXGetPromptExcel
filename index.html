@@ -3,56 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Data to Excel</title>
+    <title>Genesys API Implicit OAuth Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 <body>
-    <button onclick="getData()">Export Data to Excel</button>
+    <div class="container">
+        <h1>Genesys API Implicit OAuth Example</h1>
+
+        <input type="text" id="clientId" placeholder="Client ID">
+        <input type="text" id="redirectUri" placeholder="Redirect URI">
+        <input type="text" id="tokenEndpoint" placeholder="OAuth Token Endpoint">
+        <input type="text" id="apiEndpoint" placeholder="API Endpoint">
+
+        <button onclick="getData()">Get Data from Genesys API</button>
+
+        <div id="response"></div>
+    </div>
 
     <script>
-        function getData() {
-            // Replace with your API endpoint
-            const apiURL = 'https://api.cac1.pure.cloud/api/v2/architect/prompts?includeMediaUris=true&includeResources=true';
-            const accessTokenURL = 'https://login.cac1.pure.cloud/oauth/token';
-            const clientId = '3f73ccc2-c494-41c4-a0e6-7fbf86e765c3';
-            const clientSecret = 'uJLdHkME7ae9CbtUzwBUAubXbxO-Aa2XvGZKCUXvozM';
-            
-            // Requesting Access Token
-            fetch(accessTokenURL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                const accessToken = data.access_token;
-                
-                // Making API call with Access Token
-                fetch(apiURL, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Format data into CSV
-                    let csvContent = "data:text/csv;charset=utf-8,id,name,description,mediaUri,ttsString\n";
-                    data.forEach(item => {
-                        csvContent += `${item.id},${item.name},${item.description},${item.mediaUri},${item.ttsString}\n`;
-                    });
-                    
-                    // Create CSV file
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "data.csv");
-                    document.body.appendChild(link); // Required for FF
-                    link.click();
-                })
-                .catch(error => console.error('Error fetching data:', error));
-            })
-            .catch(error => console.error('Error fetching access token:', error));
+        async function getData() {
+            try {
+                const clientId = document.getElementById('clientId').value;
+                const redirectUri = document.getElementById('redirectUri').value;
+                const tokenEndpoint = document.getElementById('tokenEndpoint').value;
+                const apiEndpoint = document.getElementById('apiEndpoint').value;
+
+                // Redirect to OAuth token endpoint with required parameters
+                const authUrl = `${tokenEndpoint}?response_type=token&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+                // Redirect user to authorization URL
+                window.location.href = authUrl;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').innerHTML = '<p>Error occurred. Please check console for details.</p>';
+            }
         }
     </script>
 </body>
