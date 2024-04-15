@@ -53,13 +53,13 @@
     <div class="container">
         <h2>Genesys Cloud OAuth Implicit Grant</h2>
         <label for="clientId">Client ID:</label>
-        <input type="text" id="clientId" placeholder="Enter your client ID">
+        <input type="text" id="clientId" placeholder="Enter your client ID" value="--- Implicit Grant Client ID ---">
 
         <label for="redirectUri">Redirect URI:</label>
-        <input type="text" id="redirectUri" placeholder="Enter your redirect URI">
+        <input type="text" id="redirectUri" placeholder="Enter your redirect URI" value="http://localhost:8085/oauth2/callback">
 
         <label for="environment">Genesys Cloud Environment:</label>
-        <input type="text" id="environment" placeholder="Enter Genesys Cloud environment">
+        <input type="text" id="environment" placeholder="Enter Genesys Cloud environment" value="mypurecloud.com">
 
         <button onclick="authenticate()">Authenticate</button>
     </div>
@@ -82,7 +82,39 @@
                 redirect_uri: redirectUri
             }
 
+            // Redirect to Genesys Cloud for authentication
             window.location.replace(`https://login.${environment}/oauth/authorize?` + encodeURI(Object.entries(queryStringData).map(([key, value]) => `${key}=${value}`).join('&')));
+        }
+
+        // Function to extract access token from URL
+        function getParameterByName(name) {
+            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.hash);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        // Check if access token exists in URL
+        if (window.location.hash) {
+            var token = getParameterByName('access_token');
+
+            // Make API call to retrieve user data
+            $.ajax({
+                url: `https://api.${environment}/api/v2/users/me`,
+                type: "GET",
+                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + token); },
+                success: function (data) {
+                    // Show success message
+                    alert('Authentication successful. User data retrieved successfully:\n' + JSON.stringify(data));
+                },
+                error: function (xhr, status, error) {
+                    // Show error message
+                    alert('Error occurred while fetching user data:\n' + error);
+                }
+            });
+
+            // Clear URL hash
+            location.hash = '';
         }
     </script>
 </body>
