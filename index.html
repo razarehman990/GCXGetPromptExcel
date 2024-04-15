@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genesys Cloud Implicit OAuth Example</title>
+    <title>Genesys Cloud OAuth Implicit Grant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #f4f4f4;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 400px;
+            margin: 50px auto;
             padding: 20px;
-            background-color: #fff;
+            background: #fff;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
+        h2 {
             text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
         }
 
         input[type="text"] {
@@ -35,7 +35,6 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
-            font-size: 16px;
         }
 
         button {
@@ -47,67 +46,35 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #response {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            white-space: pre-wrap;
-        }
-
-        /* Popup message styles */
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            z-index: 9999;
-        }
-
-        .success {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .error {
-            background-color: #dc3545;
-            color: #fff;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Genesys Cloud Implicit OAuth Example</h1>
+        <h2>Genesys Cloud OAuth Implicit Grant</h2>
+        <label for="clientId">Client ID:</label>
+        <input type="text" id="clientId" placeholder="Enter your client ID">
 
-        <input type="text" id="clientId" placeholder="Client ID">
-        <input type="text" id="redirectUri" placeholder="Redirect URI">
-        <input type="text" id="environment" placeholder="Genesys Cloud Environment (e.g., mypurecloud.com)">
+        <label for="redirectUri">Redirect URI:</label>
+        <input type="text" id="redirectUri" placeholder="Enter your redirect URI">
 
-        <button onclick="authorize()">Authorize with Genesys Cloud</button>
+        <label for="environment">Genesys Cloud Environment:</label>
+        <input type="text" id="environment" placeholder="Enter Genesys Cloud environment">
 
-        <div id="response"></div>
+        <button onclick="authenticate()">Authenticate</button>
     </div>
 
-    <!-- Popup message container -->
-    <div id="popup" class="popup"></div>
-
     <script>
-        function authorize() {
+        function authenticate() {
             const clientId = document.getElementById('clientId').value;
             const redirectUri = document.getElementById('redirectUri').value;
             const environment = document.getElementById('environment').value;
+
+            // Check if any field is empty
+            if (!clientId || !redirectUri || !environment) {
+                alert('Please fill in all fields');
+                return;
+            }
 
             const queryStringData = {
                 response_type: "token",
@@ -115,52 +82,7 @@
                 redirect_uri: redirectUri
             }
 
-            window.location.replace(`https://login.${environment}/oauth/authorize?${encodeURI(jQuery.param(queryStringData))}`);
-        }
-
-        function getData() {
-            const token = getParameterByName('access_token');
-
-            if (token) {
-                showPopup('Authorization Successful', 'success');
-                $.ajax({
-                    url: `https://api.${ENVIRONMENT}/api/v2/users/me`,
-                    type: "GET",
-                    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'bearer ' + token);},
-                    success: function(data) {
-                        document.getElementById('response').innerText = JSON.stringify(data, null, 2);
-                    },
-                    error: function(xhr, textStatus, errorThrown) {
-                        showPopup(`Error: ${errorThrown}`, 'error');
-                    }
-                });
-            } else {
-                showPopup('No access token found.', 'error');
-            }
-        }
-
-        function getParameterByName(name) {
-            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.hash);
-            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
-
-        function showPopup(message, type) {
-            const popup = document.getElementById('popup');
-            popup.textContent = message;
-            popup.className = `popup ${type}`;
-
-            // Automatically close popup after 3 seconds
-            setTimeout(() => {
-                popup.textContent = '';
-            }, 3000);
-        }
-
-        // Check for access token in URL hash
-        if (window.location.hash) {
-            getData();
-            location.hash = ''; // Clear hash after retrieving access token
+            window.location.replace(`https://login.${environment}/oauth/authorize?` + encodeURI(Object.entries(queryStringData).map(([key, value]) => `${key}=${value}`).join('&')));
         }
     </script>
 </body>
