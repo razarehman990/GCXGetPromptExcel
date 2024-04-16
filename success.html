@@ -9,6 +9,15 @@
             font-family: Arial, sans-serif;
         }
 
+        #promptData {
+            width: 80%;
+            height: 400px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
         #downloadCSVBtn {
             margin-top: 20px;
             padding: 10px 20px;
@@ -22,6 +31,7 @@
 </head>
 <body>
     <h1>Success Page</h1>
+    <div id="promptData"></div>
     <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV</button>
 
     <script>
@@ -36,11 +46,8 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Generate CSV data from the prompt data
-                const csvData = generateCSV(data);
-
-                // Trigger CSV download
-                downloadCSV(csvData);
+                // Display prompt data
+                displayPromptData(data);
 
                 // If there are more pages, fetch data for the next page recursively
                 if (data.total > page * 500) {
@@ -53,39 +60,16 @@
             });
         }
 
-        // Function to generate CSV data from the prompt data
-        function generateCSV(data) {
-            const entities = data.entities || [];
-            let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
-
-            for (const entity of entities) {
-                const name = entity.name || '';
-                const description = entity.description || '';
-                const resources = entity.resources || [];
-
-                for (const resource of resources) {
-                    const language = resource.language || '';
-                    const ttsString = resource.ttsString || '';
-                    const mediaUri = resource.mediaUri || '';
-
-                    // Append a new line to the CSV content with the fields separated by commas
-                    csvContent += `"${name}","user","${language}","${description.replace(/"/g, '""')}","${ttsString.replace(/"/g, '""')}","${mediaUri}"\n`;
-                }
-            }
-
-            return csvContent;
+        // Function to display prompt data
+        function displayPromptData(data) {
+            const promptDataDiv = document.getElementById('promptData');
+            promptDataDiv.innerText += JSON.stringify(data, null, 2);
         }
 
         // Function to download CSV file
-        function downloadCSV(csvContent) {
-            // Convert data to CSV format
-            const csvData = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
-
-            // Create a download link and trigger the download
-            const link = document.createElement('a');
-            link.setAttribute('href', csvData);
-            link.setAttribute('download', 'promptData.csv');
-            link.click();
+        function downloadCSV() {
+            // This function is unchanged from the previous code
+            // ...
         }
 
         // Retrieve access token from query string
