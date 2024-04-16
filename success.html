@@ -71,9 +71,8 @@
             color: red;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading {
+            color: blue;
         }
     </style>
 </head>
@@ -131,12 +130,15 @@
                     const language = resource.language || '';
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
+                    const fileType = mediaUri.split('.').pop().toLowerCase();
 
-                    // Append a new line to the CSV content with the fields separated by commas
-                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+                    if (fileType === 'wav') {
+                        // Append a new line to the CSV content with the fields separated by commas
+                        csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Start downloading the media file and add the promise to the array
-                    downloadPromises.push(downloadMediaFile(name, mediaUri));
+                        // Start downloading the media file and add the promise to the array
+                        downloadPromises.push(downloadMediaFile(name, mediaUri));
+                    }
                 }
             }
 
