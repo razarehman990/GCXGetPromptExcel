@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <h2>Genesys Cloud OAuth Implicit Grant - Authentication</h2>
-        <p>Processing authentication...</p>
+        <p>Authenticating...</p>
     </div>
 
     <script>
@@ -23,19 +23,21 @@
             return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
 
-        // Check if access token exists in URL hash
+        // Check if access token exists in URL
         var token = getParameterByName('access_token');
+        console.log('Access Token:', token);
 
-        if (token) {
-            // Token found, redirect to success.html with token as query parameter
-            window.location.href = `success.html?token=${token}`;
-        } else {
-            // Token not found, redirect to error.html after displaying error message for 5 seconds
-            const errorMessage = "Access token not found.";
-            alert(errorMessage);
+        if (!token) {
+            console.error('Access token not found!');
+            document.querySelector('.container').innerHTML = '<h2>Error: Access token not found!</h2>';
+            // Redirect to error page after 5 seconds
             setTimeout(() => {
                 window.location.href = 'error.html';
             }, 5000);
+        } else {
+            // Redirect to success page with token as query parameter
+            console.log('Redirecting to success page...');
+            window.location.href = `success.html?token=${token}`;
         }
     </script>
 </body>
