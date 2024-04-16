@@ -160,45 +160,6 @@
             }
         }
 
-        // Function to display prompt data
-        function displayPromptData(csvData) {
-            // Display data in the promptData div
-            const promptDataDiv = document.getElementById('promptData');
-            promptDataDiv.innerText = csvData;
-        }
-
-        // Function to download CSV file
-        async function downloadCSV() {
-            const loader = document.querySelector('.loader');
-            loader.style.display = 'block';
-
-            try {
-                // Retrieve access token from query string
-                const token = new URLSearchParams(window.location.search).get('token');
-
-                if (token) {
-                    // Generate CSV data and initiate download
-                    const csvData = await generateCSV(token);
-                    const blob = new Blob([csvData], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', 'prompt_data.csv');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } else {
-                    console.error('Access token not found!');
-                    document.getElementById('promptData').innerText = 'Access token not found!';
-                }
-            } catch (error) {
-                console.error('Error downloading CSV:', error);
-                alert('Error downloading CSV. Please try again later.');
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-
         // Function to download media files
         async function downloadMediaFiles() {
             const loader = document.querySelector('.loader');
@@ -240,6 +201,38 @@
             } finally {
                 loader.style.display = 'none';
                 document.getElementById('popup').style.display = 'block';
+            }
+        }
+
+        // Function to download CSV file
+        async function downloadCSV() {
+            const loader = document.querySelector('.loader');
+            loader.style.display = 'block';
+
+            try {
+                // Retrieve access token from query string
+                const token = new URLSearchParams(window.location.search).get('token');
+
+                if (token) {
+                    // Generate CSV data and initiate download
+                    const csvData = await generateCSV(token);
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'prompt_data.csv');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    console.error('Access token not found!');
+                    document.getElementById('promptData').innerText = 'Access token not found!';
+                }
+            } catch (error) {
+                console.error('Error downloading CSV:', error);
+                alert('Error downloading CSV. Please try again later.');
+            } finally {
+                loader.style.display = 'none';
             }
         }
     </script>
