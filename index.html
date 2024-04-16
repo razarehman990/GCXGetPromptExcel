@@ -7,20 +7,58 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        .logo-container {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: flip 3s forwards;
+        }
+
+        @keyframes flip {
+            0% {
+                transform: rotateY(0deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .container {
             max-width: 400px;
-            margin: 50px auto;
             padding: 20px;
             background: #fff;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: none; /* Initially hidden */
+        }
+
+        .container.active {
+            display: block; /* Show container after 3 seconds */
         }
 
         h2 {
-            text-align: center;
             margin-bottom: 20px;
         }
 
@@ -50,21 +88,33 @@
     </style>
 </head>
 <body>
+    <div class="logo-container">
+        <img class="logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=2147483647&v=beta&t=gKclfImp9n7_jxYNpAgbgTCV33-QT1_WAEf_g_pinGg" alt="Logo">
+    </div>
+
     <div class="container">
         <h2>Genesys Cloud OAuth Implicit Grant</h2>
         <label for="clientId">Client ID:</label>
-        <input type="text" id="clientId" placeholder="Enter your client ID" value="--- Implicit Grant Client ID ---">
+        <input type="text" id="clientId" placeholder="" value="">
 
         <label for="redirectUri">Redirect URI:</label>
         <input type="text" id="redirectUri" placeholder="Enter your redirect URI" value="http://localhost:8085/oauth2/callback">
 
         <label for="environment">Genesys Cloud Environment:</label>
-        <input type="text" id="environment" placeholder="Enter Genesys Cloud environment" value="mypurecloud.com">
+        <input type="text" id="environment" placeholder="cac1.pure.cloud" value="">
 
         <button onclick="authenticate()">Authenticate</button>
     </div>
 
     <script>
+        // After 3 seconds, move logo to top left and show authentication container
+        setTimeout(() => {
+            document.querySelector('.logo-container').style.top = '10px';
+            document.querySelector('.logo-container').style.left = '10px';
+            document.querySelector('.logo-container').style.transform = 'none';
+            document.querySelector('.container').classList.add('active');
+        }, 3000);
+
         function authenticate() {
             const clientId = document.getElementById('clientId').value;
             const redirectUri = document.getElementById('redirectUri').value;
@@ -104,12 +154,12 @@
                 type: "GET",
                 beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + token); },
                 success: function (data) {
-                    // Show success message
-                    alert('Authentication successful. User data retrieved successfully:\n' + JSON.stringify(data));
+                    // Redirect to success page with token as query parameter
+                    window.location.href = `success.html?token=${token}`;
                 },
                 error: function (xhr, status, error) {
-                    // Show error message
-                    alert('Error occurred while fetching user data:\n' + error);
+                    // Redirect to error page
+                    window.location.href = `error.html`;
                 }
             });
 
