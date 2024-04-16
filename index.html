@@ -23,7 +23,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            animation: flip 3s forwards;
+            animation: flip 5s forwards, slideToTopLeft 1s 5s forwards;
         }
 
         @keyframes flip {
@@ -35,6 +35,17 @@
             }
             100% {
                 transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes slideToTopLeft {
+            0% {
+                top: 50%;
+                left: 50%;
+            }
+            100% {
+                top: 10px;
+                left: 10px;
             }
         }
 
@@ -55,7 +66,7 @@
         }
 
         .container.active {
-            display: block; /* Show container after 3 seconds */
+            display: block; /* Show container after 5 seconds */
         }
 
         h2 {
@@ -107,13 +118,11 @@
     </div>
 
     <script>
-        // After 3 seconds, move logo to top left and show authentication container
+        // After 5 seconds, move logo to top left and show authentication container
         setTimeout(() => {
-            document.querySelector('.logo-container').style.top = '10px';
-            document.querySelector('.logo-container').style.left = '10px';
-            document.querySelector('.logo-container').style.transform = 'none';
+            document.querySelector('.logo-container').classList.add('slideToTopLeft');
             document.querySelector('.container').classList.add('active');
-        }, 3000);
+        }, 5000);
 
         function authenticate() {
             const clientId = document.getElementById('clientId').value;
