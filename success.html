@@ -131,12 +131,13 @@
                     const language = resource.language || '';
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
+                    const fileType = mediaUri.split('.').pop().toLowerCase();
 
-                    // Append a new line to the CSV content with the fields separated by commas
-                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+                    if (fileType === 'wav') {
+                        // Append a new line to the CSV content with the fields separated by commas
+                        csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Start downloading the media file and add the promise to the array
-                    if (mediaUri.toLowerCase().endsWith('.wav')) {
+                        // Start downloading the media file and add the promise to the array
                         downloadPromises.push(downloadMediaFile(name, mediaUri));
                     }
                 }
