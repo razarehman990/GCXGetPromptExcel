@@ -3,45 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication Success</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            padding: 20px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-    </style>
+    <title>Success</title>
 </head>
 <body>
-    <div class="container">
-        <h2>Authentication Successful</h2>
-        <p>You have been successfully authenticated.</p>
-        <p>Your token is: <strong id="token"></strong></p>
-    </div>
+    <h1>Authentication Successful</h1>
+    <div id="userData"></div>
 
     <script>
-        // Extract token from URL query parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
+        const token = new URLSearchParams(window.location.search).get('token');
+        const environment = 'mypurecloud.com'; // You can change this to the appropriate environment
 
-        // Display token on the page
-        document.getElementById('token').textContent = token;
+        // Make API call to retrieve user data
+        fetch(`https://api.${environment}/api/v2/users/me`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('userData').innerText = JSON.stringify(data);
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+        });
     </script>
 </body>
 </html>
