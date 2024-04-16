@@ -32,7 +32,7 @@
 <body>
     <h1>Success Page</h1>
     <div id="promptData"></div>
-    <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV</button>
+    <button id="downloadCSVBtn">Download CSV</button>
 
     <script>
         // Function to retrieve prompt data
@@ -53,6 +53,11 @@
                 if (data.total > page * 500) {
                     fetchPromptData(token, page + 1);
                 }
+
+                // Enable the download CSV button after data is loaded
+                document.getElementById('downloadCSVBtn').addEventListener('click', function() {
+                    downloadCSV(data);
+                });
             })
             .catch(error => {
                 console.error('Error fetching prompt data:', error);
@@ -67,9 +72,9 @@
         }
 
         // Function to download CSV file
-        function downloadCSV() {
-            // This function is unchanged from the previous code
-            // ...
+        function downloadCSV(data) {
+            // This function should create and download the CSV file using data from the API response
+            // Implement this function according to the previous instructions
         }
 
         // Retrieve access token from query string
