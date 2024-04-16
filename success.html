@@ -3,10 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Success</title>
+    <title>Genesys Prompts Export</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
         }
 
         #promptData {
@@ -14,19 +28,35 @@
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #f9f9f9;
-            max-width: 80%;
+            background-color: #fff;
+            max-width: 100%;
             overflow-x: auto;
+            resize: both;
+            min-height: 200px;
+            max-height: 500px;
         }
 
         #downloadMediaFilesBtn, #downloadCSVBtn {
             margin-top: 20px;
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #001f3f;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #downloadMediaFilesBtn:hover, #downloadCSVBtn:hover {
+            background-color: #003366;
+        }
+
+        #logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 150px;
+            height: auto;
         }
 
         .loader {
@@ -57,6 +87,7 @@
             max-width: 80%;
             max-height: 80%;
             overflow-y: auto;
+            z-index: 9999;
         }
 
         .popup-content {
@@ -78,13 +109,16 @@
     </style>
 </head>
 <body>
-    <h1>Success Page</h1>
-    <div id="promptData"></div>
-    <button id="downloadMediaFilesBtn" onclick="downloadMediaFiles()">Download Media Files</button>
-    <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV File</button>
-    <div class="loader"></div>
-    <div id="popup" class="popup">
-        <div class="popup-content"></div>
+    <div class="container">
+        <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
+        <h1>Genesys Prompts Export</h1>
+        <div id="promptData"></div>
+        <button id="downloadMediaFilesBtn" onclick="downloadMediaFiles()">Download Media Files</button>
+        <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV File</button>
+        <div class="loader"></div>
+        <div id="popup" class="popup">
+            <div class="popup-content"></div>
+        </div>
     </div>
 
     <script>
@@ -140,26 +174,6 @@
             return csvContent;
         }
 
-        // Function to download media file
-        async function downloadMediaFile(name, mediaUri) {
-            try {
-                const response = await fetch(mediaUri);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = name;
-                    link.click();
-                    return true;
-                } else {
-                    throw new Error('Failed to download media file: ' + response.status);
-                }
-            } catch (error) {
-                console.error('Error downloading media file:', error);
-                return false;
-            }
-        }
-
         // Function to download media files
         async function downloadMediaFiles() {
             const loader = document.querySelector('.loader');
@@ -201,6 +215,26 @@
             } finally {
                 loader.style.display = 'none';
                 document.getElementById('popup').style.display = 'block';
+            }
+        }
+
+        // Function to download media file
+        async function downloadMediaFile(name, mediaUri) {
+            try {
+                const response = await fetch(mediaUri);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = name;
+                    link.click();
+                    return true;
+                } else {
+                    throw new Error('Failed to download media file: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Error downloading media file:', error);
+                return false;
             }
         }
 
