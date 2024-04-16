@@ -6,34 +6,32 @@
     <title>Success</title>
 </head>
 <body>
-    <h1>Authentication Successful</h1>
-    <div id="userData"></div>
+    <h1>Success</h1>
+    <div id="output"></div>
 
     <script>
         const token = new URLSearchParams(window.location.search).get('token');
-        const environment = 'mypurecloud.com'; // You can change this to the appropriate environment
-
-        // Make API call to retrieve user data
-        fetch(`https://api.${environment}/api/v2/users/me`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Token invalid or expired');
-            }
-        })
-        .then(data => {
-            document.getElementById('userData').innerText = JSON.stringify(data);
-        })
-        .catch(error => {
-            console.error('Error fetching user data:', error);
-            window.location.href = 'error.html';
-        });
+        if (!token) {
+            document.getElementById('output').innerText = 'Error: Token not found';
+        } else {
+            // Make API call to retrieve user data
+            const environment = 'mypurecloud.com'; // Change to your environment
+            $.ajax({
+                url: `https://api.${environment}/api/v2/users/me`,
+                type: 'GET',
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('Authorization', 'bearer ' + token);
+                },
+                success: function(data) {
+                    // Show user data
+                    document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+                },
+                error: function(xhr, status, error) {
+                    // Show error message
+                    document.getElementById('output').innerText = 'Error: Token invalid';
+                }
+            });
+        }
     </script>
 </body>
 </html>
