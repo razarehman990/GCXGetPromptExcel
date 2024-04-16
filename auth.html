@@ -3,28 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication Page</title>
+    <title>Genesys Cloud OAuth Implicit Grant - Authentication</title>
+    <style>
+        /* Styles unchanged */
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Genesys Cloud OAuth Implicit Grant - Authentication</h2>
+        <p>Processing authentication...</p>
+    </div>
+
     <script>
-        // Function to extract access token from URL query parameters
-        function getAccessToken() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const accessToken = urlParams.get('access_token');
-            console.log('Access Token:', accessToken);
-            return accessToken;
+        // Function to extract access token from URL
+        function getParameterByName(name) {
+            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.hash);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
 
-        // Retrieve access token
-        const accessToken = getAccessToken();
+        // Check if access token exists in URL hash
+        var token = getParameterByName('access_token');
 
-        // Check if access token exists
-        if (!accessToken) {
-            // Redirect to error page if access token is not found
-            window.location.href = 'error.html';
+        if (token) {
+            // Token found, redirect to success.html with token as query parameter
+            window.location.href = `success.html?token=${token}`;
         } else {
-            // Redirect to success page with access token
-            window.location.href = `success.html?token=${accessToken}`;
+            // Token not found, redirect to error.html after displaying error message for 5 seconds
+            const errorMessage = "Access token not found.";
+            alert(errorMessage);
+            setTimeout(() => {
+                window.location.href = 'error.html';
+            }, 5000);
         }
     </script>
 </body>
