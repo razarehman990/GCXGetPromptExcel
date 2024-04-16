@@ -10,12 +10,13 @@
         }
 
         #promptData {
-            width: 80%;
-            height: 400px;
-            overflow: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
             margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-width: 80%;
+            overflow-x: auto;
         }
 
         #downloadCSVBtn {
@@ -32,7 +33,7 @@
 <body>
     <h1>Success Page</h1>
     <div id="promptData"></div>
-    <button id="downloadCSVBtn">Download CSV</button>
+    <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV</button>
 
     <script>
         // Function to retrieve prompt data
@@ -46,13 +47,11 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display prompt data
-                displayPromptData(data);
+                // Generate CSV data from the prompt data
+                const csvData = generateCSV(data);
 
-                // Attach event listener to the download CSV button
-                document.getElementById('downloadCSVBtn').addEventListener('click', function() {
-                    downloadCSV(data);
-                });
+                // Display prompt data for the current page
+                displayPromptData(csvData);
 
                 // If there are more pages, fetch data for the next page recursively
                 if (data.total > page * 500) {
@@ -61,30 +60,52 @@
             })
             .catch(error => {
                 console.error('Error fetching prompt data:', error);
-                alert('Error fetching prompt data. Please try again later.');
+                document.getElementById('promptData').innerText = 'Error fetching prompt data. Please try again later.';
             });
         }
 
+        // Function to generate CSV data from the prompt data
+        function generateCSV(data) {
+            const entities = data.entities || [];
+            let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
+
+            for (const entity of entities) {
+                const name = entity.name || '';
+                const description = entity.description || '';
+                const resources = entity.resources || [];
+
+                for (const resource of resources) {
+                    const language = resource.language || '';
+                    const ttsString = resource.ttsString || '';
+                    const mediaUri = resource.mediaUri || '';
+
+                    // Append a new line to the CSV content with the fields separated by commas
+                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+                }
+            }
+
+            return csvContent;
+        }
+
         // Function to display prompt data
-        function displayPromptData(data) {
+        function displayPromptData(csvData) {
+            // Display data in the promptData div
             const promptDataDiv = document.getElementById('promptData');
-            promptDataDiv.innerText += JSON.stringify(data, null, 2);
+            promptDataDiv.innerText = csvData;
         }
 
         // Function to download CSV file
-        function downloadCSV(data) {
-            // Create CSV content
-            let csvContent = "Name,Type,Language,Description,TtsString,MediaUri\n";
-            for (const prompt of data.entities) {
-                csvContent += `${prompt.name},user,${prompt.language},${prompt.description},${prompt.ttsString},${prompt.mediaUri}\n`;
-            }
+        function downloadCSV() {
+            // Retrieve the CSV data from the promptData div
+            const csvData = document.getElementById('promptData').innerText;
 
-            // Create CSV file
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "prompt_data.csv");
-            document.body.appendChild(link);
+            // Convert data to CSV format
+            const csvContent = `data:text/csv;charset=utf-8,${encodeURIComponent(csvData)}`;
+
+            // Create a download link and trigger the download
+            const link = document.createElement('a');
+            link.setAttribute('href', csvContent);
+            link.setAttribute('download', 'promptData.csv');
             link.click();
         }
 
@@ -96,7 +117,7 @@
             fetchPromptData(token);
         } else {
             console.error('Access token not found!');
-            alert('Access token not found!');
+            document.getElementById('promptData').innerText = 'Access token not found!';
         }
     </script>
 </body>
