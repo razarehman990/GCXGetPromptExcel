@@ -135,69 +135,49 @@
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
 
-                    const success = await downloadMediaFile(name, mediaUri, token);
+                    const fileName = `${name}.xml`;
 
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Display status popup
-                    displayStatusPopup(name, success);
+                    // Download the media file
+                    await downloadMediaFile(name, mediaUri, token, fileName);
                 }
             }
 
             return csvContent;
         }
 
-        async function downloadMediaFile(name, mediaUri, token) {
+        async function downloadMediaFile(name, mediaUri, token, fileName) {
             try {
-                const response = await fetch(mediaUri, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const blob = await response.blob();
                 const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = name;
+                link.href = mediaUri;
+                link.download = fileName;
                 link.click();
-                return true; // Success
+                displayStatusPopup(fileName, true);
             } catch (error) {
                 console.error('Error downloading media file:', error);
-                return false; // Failure
+                displayStatusPopup(fileName, false);
             }
         }
 
-        // Function to display prompt data
         function displayPromptData(csvData) {
-            // Display data in the promptData div
             const promptDataDiv = document.getElementById('promptData');
             promptDataDiv.innerText = csvData;
         }
 
-        // Function to display status popup
-        function displayStatusPopup(fileName, success) {
-            const statusPopup = document.getElementById('statusPopup');
-            const statusText = document.createElement('p');
-            statusText.innerText = `${fileName}: ${success ? 'Success' : 'Failure'}`;
-            statusText.classList.add(success ? 'success' : 'failure');
-            statusPopup.appendChild(statusText);
-            statusPopup.style.display = 'block';
-        }
-
-        // Function to download CSV file
         async function downloadCSV() {
             const loader = document.querySelector('.loader');
+            const statusPopup = document.getElementById('statusPopup');
             loader.style.display = 'block';
+            statusPopup.innerHTML = ''; // Clear previous status messages
 
             try {
-                // Retrieve access token from query string
                 const token = new URLSearchParams(window.location.search).get('token');
 
                 if (token) {
-                    // Fetch all pages of prompt data
                     const allData = await fetchAllPromptData(token);
                     console.log('Total prompt data:', allData.length);
-                    // Generate CSV data and download media files
                     const csvData = await generateCSV(token, allData);
                     displayPromptData(csvData);
                 } else {
@@ -209,6 +189,7 @@
                 alert('Error downloading CSV. Please try again later.');
             } finally {
                 loader.style.display = 'none';
+                statusPopup.style.display = 'block';
             }
         }
     </script>
