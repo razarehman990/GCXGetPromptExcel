@@ -51,7 +51,7 @@
                 const csvData = generateCSV(data);
 
                 // Display prompt data for the current page
-                displayPromptData(csvData);
+                displayOriginalPromptData(data);
 
                 // If there are more pages, fetch data for the next page recursively
                 if (data.total > page * 500) {
@@ -88,10 +88,10 @@
         }
 
         // Function to display prompt data
-        function displayPromptData(csvData) {
+        function displayOriginalPromptData(data) {
             // Display data in the promptData div
             const promptDataDiv = document.getElementById('promptData');
-            promptDataDiv.innerText = csvData;
+            promptDataDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
         }
 
         // Function to download CSV file
