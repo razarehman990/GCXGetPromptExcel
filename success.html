@@ -133,10 +133,6 @@
 
                     // Start downloading the media file and add the promise to the array
                     downloadPromises.push(downloadMediaFile(name, mediaUri));
-                    // Add a delay of 0.5 seconds before the next download
-                    if (i < allData.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
                 }
             }
 
@@ -186,6 +182,13 @@
                     // Generate CSV data and download media files
                     const csvData = await generateCSV(token);
                     displayPromptData(csvData);
+
+                    // After generating CSV and downloading media files, download the CSV file
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'prompt_data.csv';
+                    link.click();
                 } else {
                     console.error('Access token not found!');
                     document.getElementById('promptData').innerText = 'Access token not found!';
