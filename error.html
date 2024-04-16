@@ -6,12 +6,10 @@
     <title>Error</title>
 </head>
 <body>
-    <h1>Authentication Error</h1>
-    <p>There was an error during authentication. Please try again.</p>
-
     <script>
+        // Show authentication error message for 5 seconds
+        alert("Authentication error. Redirecting back to index page...");
         setTimeout(() => {
-            // Redirect back to index.html after 5 seconds
             window.location.href = 'index.html';
         }, 5000);
     </script>
