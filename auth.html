@@ -3,31 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication</title>
+    <title>Authentication Page</title>
 </head>
 <body>
     <script>
-        // Function to extract access token from URL
-        function getParameterByName(name) {
-            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.hash);
-            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        // Function to extract access token from URL query parameters
+        function getAccessToken() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('access_token');
         }
 
-        // Check if access token exists in URL
-        var token = getParameterByName('access_token');
-        if (token) {
-            // Redirect to success page with token as query parameter
-            window.location.href = `success.html?token=${token}`;
+        // Retrieve access token
+        const accessToken = getAccessToken();
+
+        // Check if access token exists
+        if (!accessToken) {
+            // Redirect to error page if access token is not found
+            window.location.href = 'error.html';
         } else {
-            // Token not found in URL, handle accordingly
-            console.error("Access token not found");
-            alert("Access token not found");
-            // Redirect to error page after 5 seconds
-            setTimeout(() => {
-                window.location.href = 'error.html';
-            }, 5000);
+            // Redirect to success page with access token
+            window.location.href = `success.html?token=${accessToken}`;
         }
     </script>
 </body>
