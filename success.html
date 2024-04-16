@@ -82,8 +82,25 @@
     </div>
 
     <script>
-        // Function to retrieve prompt data
-        async function fetchPromptData(token, page = 1) {
+        // Function to retrieve all pages of prompt data
+        async function fetchAllPromptData(token) {
+            let allData = [];
+            let page = 1;
+            let totalPages = 1;
+
+            // Fetch data for each page and concatenate it
+            while (page <= totalPages) {
+                const data = await fetchPromptData(token, page);
+                allData = allData.concat(data.entities || []);
+                totalPages = Math.ceil(data.total / 500);
+                page++;
+            }
+
+            return allData;
+        }
+
+        // Function to retrieve prompt data for a specific page
+        async function fetchPromptData(token, page) {
             // Make API call to retrieve prompt data for the specified page
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
                 method: 'GET',
@@ -95,12 +112,12 @@
         }
 
         // Function to generate CSV data from the prompt data
-        async function generateCSV(data, token) {
-            const entities = data.entities || [];
+        async function generateCSV(token) {
+            const allData = await fetchAllPromptData(token);
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
             const downloadPromises = [];
 
-            for (const entity of entities) {
+            for (const entity of allData) {
                 const name = entity.name || '';
                 const description = entity.description || '';
                 const resources = entity.resources || [];
@@ -118,7 +135,7 @@
                 }
             }
 
-            // Wait for all media file downloads to complete
+            // Wait for all media files to be downloaded
             await Promise.all(downloadPromises);
 
             return csvContent;
@@ -128,12 +145,10 @@
         async function downloadMediaFile(name, mediaUri) {
             try {
                 const response = await fetch(mediaUri);
-
                 if (response.ok) {
                     const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.href = url;
+                    link.href = window.URL.createObjectURL(blob);
                     link.download = name;
                     link.click();
                     showStatus(name, true);
@@ -163,9 +178,8 @@
                 const token = new URLSearchParams(window.location.search).get('token');
 
                 if (token) {
-                    // Fetch prompt data starting from page 1
-                    const data = await fetchPromptData(token);
-                    const csvData = await generateCSV(data, token);
+                    // Generate CSV data and download media files
+                    const csvData = await generateCSV(token);
                     displayPromptData(csvData);
                 } else {
                     console.error('Access token not found!');
