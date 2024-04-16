@@ -116,8 +116,9 @@
                     'Authorization': `Bearer ${token}`
                 }
             });
-            console.log(`Prompt data for page ${page} fetched successfully.`);
-            return await response.json();
+            const responseData = await response.json();
+            console.log(`Prompt data for page ${page} fetched successfully:`, responseData);
+            return responseData;
         }
 
         // Function to generate CSV data from the prompt data
@@ -139,27 +140,27 @@
                     const mediaUri = resource.mediaUri || '';
                     const fileType = mediaUri.split('.').pop().toLowerCase();
 
-                    // Append a new line to the CSV content with the fields separated by commas
-                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
-
-                    // Start downloading the media file and add the promise to the array if it's a .wav file
                     if (fileType === 'wav') {
+                        // Append a new line to the CSV content with the fields separated by commas
+                        csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+
+                        // Start downloading the media file and add the promise to the array
                         downloadPromises.push(downloadMediaFile(name, mediaUri));
                     }
                 }
             }
 
+            console.log('CSV data generated:', csvContent);
             // Wait for all media files to be downloaded
             await Promise.all(downloadPromises);
 
-            console.log('CSV data generated successfully:', csvContent);
             return csvContent;
         }
 
         // Function to download media file
         async function downloadMediaFile(name, mediaUri) {
-            console.log(`Downloading media file: ${name}`);
             try {
+                console.log(`Downloading media file ${name} from ${mediaUri}...`);
                 const response = await fetch(mediaUri);
                 if (response.ok) {
                     const blob = await response.blob();
