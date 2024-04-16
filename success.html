@@ -102,23 +102,13 @@
         // Function to retrieve prompt data for a specific page
         async function fetchPromptData(token, page) {
             // Make API call to retrieve prompt data for the specified page
-            console.log(`Fetching prompt data for page ${page}...`);
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-
-            console.log('Response status:', response.status);
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Response data:', data);
-                return data;
-            } else {
-                throw new Error('Failed to fetch prompt data: ' + response.status);
-            }
+            return await response.json();
         }
 
         // Function to generate CSV data from the prompt data
@@ -127,7 +117,8 @@
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
             const downloadPromises = [];
 
-            for (const entity of allData) {
+            for (let i = 0; i < allData.length; i++) {
+                const entity = allData[i];
                 const name = entity.name || '';
                 const description = entity.description || '';
                 const resources = entity.resources || [];
@@ -142,6 +133,10 @@
 
                     // Start downloading the media file and add the promise to the array
                     downloadPromises.push(downloadMediaFile(name, mediaUri));
+                    // Add a delay of 0.5 seconds before the next download
+                    if (i < allData.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
                 }
             }
 
