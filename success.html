@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Success Page</h1>
-    <div id="userData"></div>
+    <div id="promptData"></div>
 
     <script>
         // Function to extract token from query string
@@ -22,8 +22,8 @@
         var token = getParameterByName('token');
 
         if (token) {
-            // Make API call to retrieve user data
-            fetch(`https://api.cac1.pure.cloud/api/v2/users/me`, {
+            // Make API call to retrieve prompt data
+            fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -31,16 +31,16 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display user data
-                document.getElementById('userData').innerText = JSON.stringify(data, null, 2);
+                // Display prompt data
+                document.getElementById('promptData').innerText = JSON.stringify(data, null, 2);
             })
             .catch(error => {
-                console.error('Error fetching user data:', error);
-                document.getElementById('userData').innerText = 'Error fetching user data. Please try again later.';
+                console.error('Error fetching prompt data:', error);
+                document.getElementById('promptData').innerText = 'Error fetching prompt data. Please try again later.';
             });
         } else {
             console.error('Access token not found!');
-            document.getElementById('userData').innerText = 'Access token not found!';
+            document.getElementById('promptData').innerText = 'Access token not found!';
         }
     </script>
 </body>
