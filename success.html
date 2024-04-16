@@ -79,12 +79,29 @@
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
 
+                    // Download the media file
+                    downloadMediaFile(name, mediaUri);
+
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
                 }
             }
 
             return csvContent;
+        }
+
+        // Function to download media file
+        function downloadMediaFile(name, mediaUri) {
+            fetch(mediaUri)
+                .then(response => response.blob())
+                .then(blob => {
+                    // Create a temporary link to download the file
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = name; // Set the file name
+                    link.click();
+                })
+                .catch(error => console.error('Error downloading media file:', error));
         }
 
         // Function to display prompt data
