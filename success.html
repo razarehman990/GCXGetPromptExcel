@@ -19,7 +19,7 @@
             overflow-x: auto;
         }
 
-        .downloadBtn {
+        #downloadMediaFilesBtn, #downloadCSVBtn {
             margin-top: 20px;
             padding: 10px 20px;
             background-color: #007bff;
@@ -27,10 +27,6 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
-
-        #downloadMediaBtn {
-            margin-right: 10px;
         }
 
         .loader {
@@ -84,10 +80,10 @@
 <body>
     <h1>Success Page</h1>
     <div id="promptData"></div>
-    <button id="downloadMediaBtn" class="downloadBtn" onclick="downloadMediaFiles()">Download Media Files</button>
-    <button id="downloadCSVBtn" class="downloadBtn" onclick="downloadCSV()">Download CSV File</button>
+    <button id="downloadMediaFilesBtn" onclick="downloadMediaFiles()">Download Media Files</button>
+    <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV File</button>
     <div class="loader"></div>
-    <div id="popup" class="popup" onclick="closePopup()">
+    <div id="popup" class="popup">
         <div class="popup-content"></div>
     </div>
 
@@ -125,7 +121,6 @@
         async function generateCSV(token) {
             const allData = await fetchAllPromptData(token);
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
-            const downloadPromises = [];
 
             for (const entity of allData) {
                 const name = entity.name || '';
@@ -145,46 +140,6 @@
             return csvContent;
         }
 
-        // Function to download media files
-        async function downloadMediaFiles() {
-            const loader = document.querySelector('.loader');
-            const popupContent = document.querySelector('.popup-content');
-
-            loader.style.display = 'block';
-            popupContent.innerHTML = '';
-
-            try {
-                const token = new URLSearchParams(window.location.search).get('token');
-                const allData = await fetchAllPromptData(token);
-                const downloadPromises = [];
-
-                for (let i = 0; i < allData.length; i++) {
-                    const entity = allData[i];
-                    const resources = entity.resources || [];
-
-                    for (const resource of resources) {
-                        const mediaUri = resource.mediaUri || '';
-
-                        if (mediaUri.toLowerCase().endsWith('.wav')) {
-                            const name = entity.name || '';
-                            downloadPromises.push(downloadMediaFile(name, mediaUri));
-                        }
-                    }
-
-                    await sleep(500); // Wait for 0.5 seconds
-                }
-
-                await Promise.all(downloadPromises);
-                popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
-            } catch (error) {
-                console.error('Error downloading media files:', error);
-                popupContent.innerHTML += '<p class="failure">Failed to download media files!</p>';
-            } finally {
-                loader.style.display = 'none';
-                document.getElementById('popup').style.display = 'block';
-            }
-        }
-
         // Function to download media file
         async function downloadMediaFile(name, mediaUri) {
             try {
@@ -195,42 +150,55 @@
                     link.href = window.URL.createObjectURL(blob);
                     link.download = name;
                     link.click();
-                    showStatus(name, true);
+                    return true;
                 } else {
                     throw new Error('Failed to download media file: ' + response.status);
                 }
             } catch (error) {
                 console.error('Error downloading media file:', error);
-                showStatus(name, false);
+                return false;
             }
+        }
+
+        // Function to display prompt data
+        function displayPromptData(csvData) {
+            // Display data in the promptData div
+            const promptDataDiv = document.getElementById('promptData');
+            promptDataDiv.innerText = csvData;
         }
 
         // Function to download CSV file
         async function downloadCSV() {
             const loader = document.querySelector('.loader');
-            const popupContent = document.querySelector('.popup-content');
-
             loader.style.display = 'block';
-            popupContent.innerHTML = '';
 
             try {
+                // Retrieve access token from query string
                 const token = new URLSearchParams(window.location.search).get('token');
-                const csvData = await generateCSV(token);
 
-                // Create blob and download CSV file
-                const blob = new Blob([csvData], { type: 'text/csv' });
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = 'prompt_data.csv';
-                link.click();
-
-                popupContent.innerHTML += '<p class="success">CSV file downloaded successfully!</p>';
+                if (token) {
+                    // Generate CSV data
+                    const csvData = await generateCSV(token);
+                    // Create a blob with the CSV content
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    // Create a temporary URL for the blob
+                    const url = window.URL.createObjectURL(blob);
+                    // Create a link element and trigger the download
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'prompt_data.csv';
+                    link.click();
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    console.error('Access token not found!');
+                    document.getElementById('promptData').innerText = 'Access token not found!';
+                }
             } catch (error) {
                 console.error('Error downloading CSV:', error);
-                popupContent.innerHTML += '<p class="failure">Failed to download CSV file!</p>';
+                alert('Error downloading CSV. Please try again later.');
             } finally {
                 loader.style.display = 'none';
-                document.getElementById('popup').style.display = 'block';
             }
         }
 
@@ -242,14 +210,53 @@
             const icon = success ? '✔️' : '❌';
 
             popupContent.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
+            document.getElementById('popup').style.display = 'block';
         }
 
-        // Function to close status popup
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
+        // Function to download media files with interval
+        async function downloadMediaFiles() {
+            const loader = document.querySelector('.loader');
+            loader.style.display = 'block';
+            const popupContent = document.querySelector('.popup-content');
+            popupContent.innerHTML = '';
+
+            try {
+                const token = new URLSearchParams(window.location.search).get('token');
+                const allData = await fetchAllPromptData(token);
+
+                for (let i = 0; i < allData.length; i++) {
+                    const entity = allData[i];
+                    const resources = entity.resources || [];
+
+                    for (const resource of resources) {
+                        const mediaUri = resource.mediaUri || '';
+
+                        if (mediaUri.toLowerCase().endsWith('.wav')) {
+                            const name = entity.name || '';
+                            try {
+                                await downloadMediaFile(name, mediaUri);
+                                popupContent.innerHTML += `<p class="success">Success: ${name}</p>`;
+                            } catch (error) {
+                                console.error(`Error downloading ${name}:`, error);
+                                popupContent.innerHTML += `<p class="failure">Failure: ${name}</p>`;
+                            }
+                        }
+                    }
+
+                    await sleep(500); // Wait for 0.5 seconds
+                }
+
+                popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
+            } catch (error) {
+                console.error('Error downloading media files:', error);
+                popupContent.innerHTML += '<p class="failure">Failed to download media files!</p>';
+            } finally {
+                loader.style.display = 'none';
+                document.getElementById('popup').style.display = 'block';
+            }
         }
 
-        // Function to simulate sleep
+        // Function to create a delay
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
