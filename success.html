@@ -28,12 +28,79 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-top: -25px; /* Half of height */
+            margin-left: -25px; /* Half of width */
+            z-index: 9999;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fefefe;
+            border: 1px solid #888;
+            border-radius: 5px;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .popup-content {
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .success {
+            color: green;
+            font-size: 24px;
+        }
+
+        .failure {
+            color: red;
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
     <h1>Success Page</h1>
     <div id="promptData"></div>
     <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV</button>
+    <div class="loader"></div>
+    <div id="popup" class="popup">
+        <span class="close" onclick="closePopup()">&times;</span>
+        <div class="popup-content"></div>
+    </div>
 
     <script>
         // Function to retrieve prompt data
@@ -81,12 +148,12 @@
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Download the media file and push the promise to the array
+                    // Start downloading the media file and add the promise to the array
                     downloadPromises.push(downloadMediaFile(name, mediaUri, token));
                 }
             }
 
-            // Wait for all media files to be downloaded before returning CSV data
+            // Wait for all media file downloads to complete
             await Promise.all(downloadPromises);
 
             return csvContent;
@@ -94,22 +161,29 @@
 
         // Function to download media file
         async function downloadMediaFile(name, mediaUri, token) {
-            try {
-                const response = await fetch(mediaUri, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+            const MAX_RETRY_TIME = 3000; // 3 seconds
+            const startTime = Date.now();
+
+            while (Date.now() - startTime < MAX_RETRY_TIME) {
+                try {
+                    const response = await fetch(mediaUri, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = name;
+                        link.click();
+                        return;
                     }
-                });
-                const blob = await response.blob();
-
-                // Create a temporary link to download the file
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = name; // Set the file name
-                link.click();
-
-            } catch (error) {
-                console.error('Error downloading media file:', error);
+                } catch (error) {
+                    console.error('Error downloading media file:', error);
+                }
             }
         }
 
@@ -135,12 +209,54 @@
             link.click();
         }
 
+        // Function to show popup
+        function showPopup() {
+            const popup = document.getElementById('popup');
+            const popupContent = document.querySelector('.popup-content');
+            popupContent.innerHTML = '';
+
+            // Show success and failure messages
+            const successMessages = [];
+            const failureMessages = [];
+
+            const promptDataDiv = document.getElementById('promptData');
+            const lines = promptDataDiv.innerText.split('\n');
+            for (const line of lines) {
+                const [name, , , , , mediaUri] = line.split(',');
+                if (mediaUri) {
+                    const isSuccess = !failureMessages.includes(name);
+                    if (isSuccess) {
+                        successMessages.push(`<div class="success">&#10004; ${name} - Successful</div>`);
+                    } else {
+                        failureMessages.push(`<div class="failure">&#10008; ${name} - Failed</div>`);
+                    }
+                }
+            }
+
+            popupContent.innerHTML = successMessages.join('') + failureMessages.join('');
+            popup.style.display = 'block';
+        }
+
+        // Function to close popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
         // Retrieve access token from query string
         var token = new URLSearchParams(window.location.search).get('token');
 
         if (token) {
+            // Show loading spinner
+            document.querySelector('.loader').style.display = 'block';
+
             // Fetch prompt data starting from page 1
-            fetchPromptData(token);
+            fetchPromptData(token).then(() => {
+                // Hide loading spinner
+                document.querySelector('.loader').style.display = 'none';
+
+                // Show popup with download status
+                showPopup();
+            });
         } else {
             console.error('Access token not found!');
             document.getElementById('promptData').innerText = 'Access token not found!';
