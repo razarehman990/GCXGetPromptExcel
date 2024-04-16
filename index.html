@@ -23,7 +23,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            animation: flip 5s forwards, slideToTopLeft 1s 5s forwards;
+            animation: flip 5s forwards, slide 1s 5s forwards;
         }
 
         @keyframes flip {
@@ -38,12 +38,12 @@
             }
         }
 
-        @keyframes slideToTopLeft {
-            0% {
+        @keyframes slide {
+            from {
                 top: 50%;
                 left: 50%;
             }
-            100% {
+            to {
                 top: 10px;
                 left: 10px;
             }
@@ -106,13 +106,13 @@
     <div class="container">
         <h2>Genesys Cloud OAuth Implicit Grant</h2>
         <label for="clientId">Client ID:</label>
-        <input type="text" id="clientId" placeholder="" value="">
+        <input type="text" id="clientId" placeholder="Enter your client ID" value="">
 
         <label for="redirectUri">Redirect URI:</label>
         <input type="text" id="redirectUri" placeholder="Enter your redirect URI" value="http://localhost:8085/oauth2/callback">
 
         <label for="environment">Genesys Cloud Environment:</label>
-        <input type="text" id="environment" placeholder="cac1.pure.cloud" value="">
+        <input type="text" id="environment" placeholder="Enter Genesys Cloud environment" value="cac1.pure.cloud">
 
         <button onclick="authenticate()">Authenticate</button>
     </div>
@@ -120,7 +120,9 @@
     <script>
         // After 5 seconds, move logo to top left and show authentication container
         setTimeout(() => {
-            document.querySelector('.logo-container').classList.add('slideToTopLeft');
+            document.querySelector('.logo-container').style.top = '10px';
+            document.querySelector('.logo-container').style.left = '10px';
+            document.querySelector('.logo-container').style.transform = 'none';
             document.querySelector('.container').classList.add('active');
         }, 5000);
 
@@ -142,7 +144,7 @@
             }
 
             // Redirect to Genesys Cloud for authentication
-            window.location.replace(`https://login.${environment}/oauth/authorize?` + encodeURI(Object.entries(queryStringData).map(([key, value]) => `${key}=${value}`).join('&')));
+            window.location.replace(`auth.html?` + encodeURI(Object.entries(queryStringData).map(([key, value]) => `${key}=${value}`).join('&')));
         }
     </script>
 </body>
