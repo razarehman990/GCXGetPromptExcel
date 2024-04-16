@@ -102,13 +102,23 @@
         // Function to retrieve prompt data for a specific page
         async function fetchPromptData(token, page) {
             // Make API call to retrieve prompt data for the specified page
+            console.log(`Fetching prompt data for page ${page}...`);
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            return await response.json();
+
+            console.log('Response status:', response.status);
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Response data:', data);
+                return data;
+            } else {
+                throw new Error('Failed to fetch prompt data: ' + response.status);
+            }
         }
 
         // Function to generate CSV data from the prompt data
@@ -130,10 +140,8 @@
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Start downloading the media file if it's a WAV file and add the promise to the array
-                    if (mediaUri.toLowerCase().endsWith('.wav')) {
-                        downloadPromises.push(downloadMediaFile(name, mediaUri));
-                    }
+                    // Start downloading the media file and add the promise to the array
+                    downloadPromises.push(downloadMediaFile(name, mediaUri));
                 }
             }
 
@@ -147,8 +155,6 @@
         async function downloadMediaFile(name, mediaUri) {
             try {
                 const response = await fetch(mediaUri);
-                const fileType = mediaUri.split('.').pop().toLowerCase();
-                
                 if (response.ok) {
                     const blob = await response.blob();
                     const link = document.createElement('a');
