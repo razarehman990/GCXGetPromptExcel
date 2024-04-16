@@ -20,12 +20,19 @@
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Token invalid or expired');
+            }
+        })
         .then(data => {
             document.getElementById('userData').innerText = JSON.stringify(data);
         })
         .catch(error => {
             console.error('Error fetching user data:', error);
+            window.location.href = 'error.html';
         });
     </script>
 </body>
