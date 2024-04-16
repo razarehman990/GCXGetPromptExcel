@@ -114,7 +114,7 @@
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
                     // Start downloading the media file and add the promise to the array
-                    downloadPromises.push(downloadMediaFile(name, mediaUri, token));
+                    downloadPromises.push(downloadMediaFile(name, mediaUri));
                 }
             }
 
@@ -125,13 +125,9 @@
         }
 
         // Function to download media file
-        async function downloadMediaFile(name, mediaUri, token) {
+        async function downloadMediaFile(name, mediaUri) {
             try {
-                const response = await fetch(mediaUri, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch(mediaUri);
 
                 if (response.ok) {
                     const blob = await response.blob();
@@ -142,7 +138,7 @@
                     link.click();
                     showStatus(name, true);
                 } else {
-                    showStatus(name, false);
+                    throw new Error('Failed to download media file: ' + response.status);
                 }
             } catch (error) {
                 console.error('Error downloading media file:', error);
