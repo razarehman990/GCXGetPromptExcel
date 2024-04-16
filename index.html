@@ -135,37 +135,6 @@
             // Redirect to Genesys Cloud for authentication
             window.location.replace(`https://login.${environment}/oauth/authorize?` + encodeURI(Object.entries(queryStringData).map(([key, value]) => `${key}=${value}`).join('&')));
         }
-
-        // Function to extract access token from URL
-        function getParameterByName(name) {
-            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
-                results = regex.exec(location.hash);
-            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
-
-        // Check if access token exists in URL
-        if (window.location.hash) {
-            var token = getParameterByName('access_token');
-
-            // Make API call to retrieve user data
-            $.ajax({
-                url: `https://api.${environment}/api/v2/users/me`,
-                type: "GET",
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + token); },
-                success: function (data) {
-                    // Redirect to success page with token as query parameter
-                    window.location.href = `success.html?token=${token}`;
-                },
-                error: function (xhr, status, error) {
-                    // Redirect to error page
-                    window.location.href = `error.html`;
-                }
-            });
-
-            // Clear URL hash
-            location.hash = '';
-        }
     </script>
 </body>
 </html>
