@@ -3,58 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genesys Cloud OAuth Implicit Grant - Success</title>
-    <style>
-        /* Styles unchanged */
-    </style>
+    <title>Success</title>
 </head>
 <body>
-    <div class="container">
-        <h2>Genesys Cloud OAuth Implicit Grant - Success</h2>
-        <p>Fetching user data...</p>
-    </div>
+    <h1>Success Page</h1>
+    <div id="userData"></div>
 
     <script>
-        // Function to extract access token from URL
+        // Function to extract token from query string
         function getParameterByName(name) {
             name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
                 results = regex.exec(location.search);
             return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
 
-        // Extract access token from URL
+        // Retrieve access token from query string
         var token = getParameterByName('token');
 
-        if (!token) {
-            console.error('Access token not found!');
-            document.querySelector('.container').innerHTML = '<h2>Error: Access token not found!</h2>';
-            // Redirect to error page after 5 seconds
-            setTimeout(() => {
-                window.location.href = 'error.html';
-            }, 5000);
-        } else {
+        if (token) {
             // Make API call to retrieve user data
             fetch(`https://api.cac1.pure.cloud/api/v2/users/me`, {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 // Display user data
-                console.log('User Data:', data);
-                document.querySelector('.container').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById('userData').innerText = JSON.stringify(data, null, 2);
             })
             .catch(error => {
                 console.error('Error fetching user data:', error);
-                document.querySelector('.container').innerHTML = '<h2>Error: Failed to fetch user data</h2>';
+                document.getElementById('userData').innerText = 'Error fetching user data. Please try again later.';
             });
+        } else {
+            console.error('Access token not found!');
+            document.getElementById('userData').innerText = 'Access token not found!';
         }
     </script>
 </body>
