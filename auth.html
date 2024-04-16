@@ -10,7 +10,9 @@
         // Function to extract access token from URL query parameters
         function getAccessToken() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('access_token');
+            const accessToken = urlParams.get('access_token');
+            console.log('Access Token:', accessToken);
+            return accessToken;
         }
 
         // Retrieve access token
