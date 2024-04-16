@@ -37,37 +37,36 @@
 
     <script>
         // Function to retrieve prompt data
-        function fetchPromptData(token, page = 1) {
-            // Make API call to retrieve prompt data for the specified page
-            fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
+        async function fetchPromptData(token, page = 1) {
+            try {
+                // Make API call to retrieve prompt data for the specified page
+                const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+
                 // Generate CSV data from the prompt data
-                const csvData = generateCSV(data);
+                const csvData = await generateCSV(data, token);
 
                 // Display prompt data for the current page
                 displayPromptData(csvData);
 
-                // If there are more pages, fetch data for the next page recursively
-                if (data.total > page * 500) {
-                    fetchPromptData(token, page + 1);
-                }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error fetching prompt data:', error);
                 document.getElementById('promptData').innerText = 'Error fetching prompt data. Please try again later.';
-            });
+            }
         }
 
         // Function to generate CSV data from the prompt data
-        function generateCSV(data) {
+        async function generateCSV(data, token) {
             const entities = data.entities || [];
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
+
+            // Array to store promises for media file downloads
+            const downloadPromises = [];
 
             for (const entity of entities) {
                 const name = entity.name || '';
@@ -79,29 +78,39 @@
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
 
-                    // Download the media file
-                    downloadMediaFile(name, mediaUri);
-
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+
+                    // Download the media file and push the promise to the array
+                    downloadPromises.push(downloadMediaFile(name, mediaUri, token));
                 }
             }
+
+            // Wait for all media files to be downloaded before returning CSV data
+            await Promise.all(downloadPromises);
 
             return csvContent;
         }
 
         // Function to download media file
-        function downloadMediaFile(name, mediaUri) {
-            fetch(mediaUri)
-                .then(response => response.blob())
-                .then(blob => {
-                    // Create a temporary link to download the file
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = name; // Set the file name
-                    link.click();
-                })
-                .catch(error => console.error('Error downloading media file:', error));
+        async function downloadMediaFile(name, mediaUri, token) {
+            try {
+                const response = await fetch(mediaUri, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const blob = await response.blob();
+
+                // Create a temporary link to download the file
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = name; // Set the file name
+                link.click();
+
+            } catch (error) {
+                console.error('Error downloading media file:', error);
+            }
         }
 
         // Function to display prompt data
