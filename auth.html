@@ -23,9 +23,8 @@
             return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
         }
 
-        // Check if access token exists in URL
+        // Extract access token from URL
         var token = getParameterByName('access_token');
-        console.log('Access Token:', token);
 
         if (!token) {
             console.error('Access token not found!');
@@ -36,7 +35,6 @@
             }, 5000);
         } else {
             // Redirect to success page with token as query parameter
-            console.log('Redirecting to success page...');
             window.location.href = `success.html?token=${token}`;
         }
     </script>
