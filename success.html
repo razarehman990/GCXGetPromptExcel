@@ -73,8 +73,19 @@
 
         // Function to download CSV file
         function downloadCSV(data) {
-            // This function should create and download the CSV file using data from the API response
-            // Implement this function according to the previous instructions
+            // Create CSV content
+            let csvContent = "Name,Type,Language,Description,TtsString,MediaUri\n";
+            for (const prompt of data.entities) {
+                csvContent += `${prompt.name},user,${prompt.language},${prompt.description},${prompt.ttsString},${prompt.mediaUri}\n`;
+            }
+
+            // Create CSV file
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "prompt_data.csv");
+            document.body.appendChild(link);
+            link.click();
         }
 
         // Retrieve access token from query string
