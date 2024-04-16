@@ -49,15 +49,15 @@
                 // Display prompt data
                 displayPromptData(data);
 
+                // Attach event listener to the download CSV button
+                document.getElementById('downloadCSVBtn').addEventListener('click', function() {
+                    downloadCSV(data);
+                });
+
                 // If there are more pages, fetch data for the next page recursively
                 if (data.total > page * 500) {
                     fetchPromptData(token, page + 1);
                 }
-
-                // Enable the download CSV button after data is loaded
-                document.getElementById('downloadCSVBtn').addEventListener('click', function() {
-                    downloadCSV(data);
-                });
             })
             .catch(error => {
                 console.error('Error fetching prompt data:', error);
