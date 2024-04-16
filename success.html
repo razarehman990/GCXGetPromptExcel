@@ -130,8 +130,10 @@
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
 
-                    // Start downloading the media file and add the promise to the array
-                    downloadPromises.push(downloadMediaFile(name, mediaUri));
+                    // Start downloading the media file if it's a WAV file and add the promise to the array
+                    if (mediaUri.toLowerCase().endsWith('.wav')) {
+                        downloadPromises.push(downloadMediaFile(name, mediaUri));
+                    }
                 }
             }
 
@@ -147,7 +149,7 @@
                 const response = await fetch(mediaUri);
                 const fileType = mediaUri.split('.').pop().toLowerCase();
                 
-                if (response.ok && fileType === 'wav') {
+                if (response.ok) {
                     const blob = await response.blob();
                     const link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
