@@ -95,7 +95,7 @@
         }
 
         // Function to generate CSV data from the prompt data
-        async function generateCSV(data) {
+        async function generateCSV(data, token) {
             const entities = data.entities || [];
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
             const downloadPromises = [];
@@ -126,29 +126,27 @@
 
         // Function to download media file
         async function downloadMediaFile(name, mediaUri, token) {
-            const MAX_RETRY_TIME = 3000; // 3 seconds
-            const startTime = Date.now();
-
-            while (Date.now() - startTime < MAX_RETRY_TIME) {
-                try {
-                    const response = await fetch(mediaUri, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = name;
-                        link.click();
-                        return;
+            try {
+                const response = await fetch(mediaUri, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                } catch (error) {
-                    console.error('Error downloading media file:', error);
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = name;
+                    link.click();
+                    showStatus(name, true);
+                } else {
+                    showStatus(name, false);
                 }
+            } catch (error) {
+                console.error('Error downloading media file:', error);
+                showStatus(name, false);
             }
         }
 
@@ -160,78 +158,41 @@
         }
 
         // Function to download CSV file
-        function downloadCSV() {
-            // Show loading spinner
-            document.querySelector('.loader').style.display = 'block';
+        async function downloadCSV() {
+            const loader = document.querySelector('.loader');
+            loader.style.display = 'block';
 
-            // Retrieve the CSV data from the promptData div
-            const promptDataDiv = document.getElementById('promptData');
-            const csvData = promptDataDiv.innerText;
+            try {
+                // Retrieve access token from query string
+                const token = new URLSearchParams(window.location.search).get('token');
 
-            // Convert data to CSV format
-            const csvContent = `data:text/csv;charset=utf-8,${encodeURIComponent(csvData)}`;
-
-            // Create a download link and trigger the download
-            const link = document.createElement('a');
-            link.setAttribute('href', csvContent);
-            link.setAttribute('download', 'promptData.csv');
-            link.click();
-
-            // Hide loading spinner
-            document.querySelector('.loader').style.display = 'none';
-
-            // Show popup with download status
-            showPopup();
+                if (token) {
+                    // Fetch prompt data starting from page 1
+                    const data = await fetchPromptData(token);
+                    const csvData = await generateCSV(data, token);
+                    displayPromptData(csvData);
+                } else {
+                    console.error('Access token not found!');
+                    document.getElementById('promptData').innerText = 'Access token not found!';
+                }
+            } catch (error) {
+                console.error('Error downloading CSV:', error);
+                alert('Error downloading CSV. Please try again later.');
+            } finally {
+                loader.style.display = 'none';
+            }
         }
 
-        // Function to show popup
-        function showPopup() {
+        // Function to show status popup
+        function showStatus(fileName, success) {
             const popup = document.getElementById('popup');
             const popupContent = document.querySelector('.popup-content');
-            popupContent.innerHTML = '';
+            const status = success ? 'Success' : 'Failure';
+            const statusClass = success ? 'success' : 'failure';
+            const icon = success ? '✔️' : '❌';
 
-            // Show success and failure messages
-            const successMessages = [];
-            const failureMessages = [];
-
-            const promptDataDiv = document.getElementById('promptData');
-            const lines = promptDataDiv.innerText.split('\n');
-            for (const line of lines) {
-                const [name, , , , , mediaUri] = line.split(',');
-                if (mediaUri) {
-                    const isSuccess = !failureMessages.includes(name);
-                    if (isSuccess) {
-                        successMessages.push(`<div class="success">&#10004; ${name} - Successful</div>`);
-                    } else {
-                        failureMessages.push(`<div class="failure">&#10008; ${name} - Failed</div>`);
-                    }
-                }
-            }
-
-            popupContent.innerHTML = successMessages.join('') + failureMessages.join('');
+            popupContent.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
             popup.style.display = 'block';
-        }
-
-        // Function to close popup
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
-        }
-
-        // Retrieve access token from query string
-        const token = new URLSearchParams(window.location.search).get('token');
-
-        if (token) {
-            // Fetch prompt data starting from page 1
-            fetchPromptData(token)
-                .then(data => generateCSV(data))
-                .then(csvData => displayPromptData(csvData))
-                .catch(error => {
-                    console.error('Error fetching prompt data:', error);
-                    document.getElementById('promptData').innerText = 'Error fetching prompt data. Please try again later.';
-                });
-        } else {
-            console.error('Access token not found!');
-            document.getElementById('promptData').innerText = 'Access token not found!';
         }
     </script>
 </body>
