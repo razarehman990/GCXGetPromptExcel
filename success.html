@@ -89,26 +89,23 @@
     <script>
         // Function to retrieve all pages of prompt data
         async function fetchAllPromptData(token) {
-            console.log('Fetching all prompt data...');
             let allData = [];
             let page = 1;
             let totalPages = 1;
 
             // Fetch data for each page and concatenate it
-            do {
+            while (page <= totalPages) {
                 const data = await fetchPromptData(token, page);
                 allData = allData.concat(data.entities || []);
                 totalPages = Math.ceil(data.total / 500);
                 page++;
-            } while (page <= totalPages);
+            }
 
-            console.log('All prompt data fetched:', allData);
             return allData;
         }
 
         // Function to retrieve prompt data for a specific page
         async function fetchPromptData(token, page) {
-            console.log(`Fetching prompt data for page ${page}...`);
             // Make API call to retrieve prompt data for the specified page
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
                 method: 'GET',
@@ -116,16 +113,12 @@
                     'Authorization': `Bearer ${token}`
                 }
             });
-            const responseData = await response.json();
-            console.log(`Prompt data for page ${page} fetched successfully:`, responseData);
-            return responseData;
+            return await response.json();
         }
 
         // Function to generate CSV data from the prompt data
         async function generateCSV(token) {
-            console.log('Generating CSV data...');
             const allData = await fetchAllPromptData(token);
-            console.log('All prompt data:', allData);
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
             const downloadPromises = [];
 
@@ -150,7 +143,6 @@
                 }
             }
 
-            console.log('CSV data generated:', csvContent);
             // Wait for all media files to be downloaded
             await Promise.all(downloadPromises);
 
@@ -160,7 +152,6 @@
         // Function to download media file
         async function downloadMediaFile(name, mediaUri) {
             try {
-                console.log(`Downloading media file ${name} from ${mediaUri}...`);
                 const response = await fetch(mediaUri);
                 if (response.ok) {
                     const blob = await response.blob();
@@ -169,12 +160,11 @@
                     link.download = name;
                     link.click();
                     showStatus(name, true);
-                    console.log(`Media file ${name} downloaded successfully.`);
                 } else {
-                    throw new Error(`Failed to download media file ${name}: ${response.status}`);
+                    throw new Error('Failed to download media file: ' + response.status);
                 }
             } catch (error) {
-                console.error(`Error downloading media file ${name}:`, error);
+                console.error('Error downloading media file:', error);
                 showStatus(name, false);
             }
         }
@@ -188,7 +178,6 @@
 
         // Function to download CSV file
         async function downloadCSV() {
-            console.log('Downloading CSV...');
             const loader = document.querySelector('.loader');
             loader.style.display = 'block';
 
