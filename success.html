@@ -61,6 +61,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             display: none;
             z-index: 9999;
+            max-height: 80%;
+            overflow-y: auto;
         }
 
         .status-popup p {
@@ -74,6 +76,21 @@
         .failure {
             color: red;
         }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -84,7 +101,6 @@
     <div class="status-popup" id="statusPopup"></div>
 
     <script>
-        // Function to retrieve prompt data
         async function fetchAllPromptData(token) {
             let allData = [];
             let page = 1;
@@ -119,11 +135,13 @@
                     const ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
 
-                    // Download the media file
-                    await downloadMediaFile(name, mediaUri, token);
+                    const success = await downloadMediaFile(name, mediaUri, token);
 
                     // Append a new line to the CSV content with the fields separated by commas
                     csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+
+                    // Display status popup
+                    displayStatusPopup(name, success);
                 }
             }
 
@@ -154,6 +172,16 @@
             // Display data in the promptData div
             const promptDataDiv = document.getElementById('promptData');
             promptDataDiv.innerText = csvData;
+        }
+
+        // Function to display status popup
+        function displayStatusPopup(fileName, success) {
+            const statusPopup = document.getElementById('statusPopup');
+            const statusText = document.createElement('p');
+            statusText.innerText = `${fileName}: ${success ? 'Success' : 'Failure'}`;
+            statusText.classList.add(success ? 'success' : 'failure');
+            statusPopup.appendChild(statusText);
+            statusPopup.style.display = 'block';
         }
 
         // Function to download CSV file
