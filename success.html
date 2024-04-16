@@ -94,12 +94,12 @@
             let totalPages = 1;
 
             // Fetch data for each page and concatenate it
-            do {
+            while (page <= totalPages) {
                 const data = await fetchPromptData(token, page);
                 allData = allData.concat(data.entities || []);
                 totalPages = Math.ceil(data.total / 500);
                 page++;
-            } while (page <= totalPages);
+            }
 
             return allData;
         }
