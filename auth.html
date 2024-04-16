@@ -7,14 +7,27 @@
 </head>
 <body>
     <script>
-        const token = new URLSearchParams(window.location.hash.substring(1)).get('access_token');
+        // Function to extract access token from URL
+        function getParameterByName(name) {
+            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.hash);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
 
+        // Check if access token exists in URL
+        var token = getParameterByName('access_token');
         if (token) {
-            // Token exists, redirect to success.html
+            // Redirect to success page with token as query parameter
             window.location.href = `success.html?token=${token}`;
         } else {
-            // Token does not exist, redirect to error.html
-            window.location.href = 'error.html';
+            // Token not found in URL, handle accordingly
+            console.error("Access token not found");
+            alert("Access token not found");
+            // Redirect to error page after 5 seconds
+            setTimeout(() => {
+                window.location.href = 'error.html';
+            }, 5000);
         }
     </script>
 </body>
