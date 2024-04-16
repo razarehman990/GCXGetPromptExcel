@@ -6,34 +6,52 @@
     <title>Success</title>
 </head>
 <body>
-    <h1>Success</h1>
-    <div id="output"></div>
-
-    <!-- Include jQuery library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
     <script>
-        const token = new URLSearchParams(window.location.search).get('token');
-        if (!token) {
-            document.getElementById('output').innerText = 'Error: Token not found';
-        } else {
-            // Make API call to retrieve user data
-            const environment = 'mypurecloud.com'; // Change to your environment
-            $.ajax({
-                url: `https://api.${environment}/api/v2/users/me`,
-                type: 'GET',
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader('Authorization', 'bearer ' + token);
-                },
-                success: function(data) {
-                    // Show user data
-                    document.getElementById('output').innerText = JSON.stringify(data, null, 2);
-                },
-                error: function(xhr, status, error) {
-                    // Show error message
-                    document.getElementById('output').innerText = 'Error: Token invalid';
+        // Function to extract access token from URL
+        function getParameterByName(name) {
+            name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+
+        // Check if access token exists in URL
+        var token = getParameterByName('token');
+        if (token) {
+            var apiUrl = "https://api.cac1.pure.cloud/api/v2/users/me";
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", apiUrl, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Authorization", "Bearer " + token);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // API call successful
+                        var responseData = JSON.parse(xhr.responseText);
+                        console.log("User data:", responseData);
+                        // Display user data or perform other actions
+                        alert("User data retrieved successfully:\n" + JSON.stringify(responseData));
+                    } else {
+                        // API call failed
+                        console.error("Error fetching user data:", xhr.statusText);
+                        // Show error message or redirect to error page
+                        alert("Error fetching user data:\n" + xhr.statusText);
+                        // Redirect to error page after 5 seconds
+                        setTimeout(() => {
+                            window.location.href = 'error.html';
+                        }, 5000);
+                    }
                 }
-            });
+            };
+            xhr.send();
+        } else {
+            // Token not found in URL, handle accordingly
+            console.error("Access token not found");
+            alert("Access token not found");
+            // Redirect to error page after 5 seconds
+            setTimeout(() => {
+                window.location.href = 'error.html';
+            }, 5000);
         }
     </script>
 </body>
