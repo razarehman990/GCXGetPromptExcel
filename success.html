@@ -134,11 +134,16 @@ async function generateCSV(token) {
         const resources = entity.resources || [];
 
         for (const resource of resources) {
+            const type = resource.type || '';
             const language = resource.language || '';
+            const description = resource.description || '';
             const ttsString = resource.ttsString || '';
             const mediaUri = resource.mediaUri || '';
             const fileName = mediaUri ? `${name}.wav` : '';
-            csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+            csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+
+            // Clearing values after first row
+            name = '';
         }
     }
 
@@ -160,7 +165,7 @@ async function generateCSV(token) {
 
                 for (const resource of resources) {
                     const mediaUri = resource.mediaUri || '';
-                    const name = entity.name || '';
+                    let name = entity.name || '';
                     const fileName = `${name}.wav`;
 
                     try {
