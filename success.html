@@ -187,30 +187,29 @@
             return csvContent;
         }
 
-        async function downloadMediaFiles() {
-            showFlippingLogo();
-            const token = new URLSearchParams(window.location.search).get('token');
-            const data = await fetchAllPromptData(token, 'https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500');
+async function downloadMediaFiles() {
+    showFlippingLogo();
+    const token = new URLSearchParams(window.location.search).get('token');
+    const data = await fetchAllPromptData(token, 'https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500');
 
-            for (const entity of data) {
-                const name = entity.name || '';
-                const mediaUri = entity.resources[0] ? entity.resources[0].mediaUri || '' : '';
+    for (const entity of data) {
+        const name = entity.name || '';
+        const mediaUri = entity.resources[0] ? entity.resources[0].mediaUri || '' : '';
 
-                if (mediaUri) {
-                    // Download the media file with a slight delay between each download
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = mediaUri;
-                        link.download = `${name}.wav`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }, 500);
-                }
-            }
-
-            hideFlippingLogo();
+        if (mediaUri) {
+            const link = document.createElement('a');
+            link.href = mediaUri;
+            link.download = `${name}.wav`; // Set the download attribute to specify file name
+            link.style.display = 'none'; // Hide the link
+            document.body.appendChild(link);
+            link.click(); // Simulate click to trigger download
+            document.body.removeChild(link);
         }
+    }
+
+    hideFlippingLogo();
+}
+
 
         async function downloadCSV() {
             showFlippingLogo();
