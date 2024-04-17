@@ -87,35 +87,23 @@
             color: red;
         }
 
-        #output-container {
-            width: 80%;
-            margin: 20px auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
         #output {
-            width: 100%;
+            width: 80%;
             min-height: 200px;
+            margin: 20px auto;
             display: block;
             overflow-x: auto;
             text-align: left;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
-            position: relative;
         }
 
         #flipping-logo {
             height: 50px;
             animation: flip 1s infinite;
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            margin-bottom: 20px;
         }
 
         @keyframes flip {
@@ -129,10 +117,7 @@
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
         <h1 id="title"> Genesys Prompt Export </h1>
     </div>
-    <div id="output-container">
-        <textarea id="output" readonly></textarea>
-        <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
-    </div>
+    <textarea id="output" readonly></textarea>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
@@ -142,6 +127,8 @@
             <div class="popup-content"></div>
         </div>
     </div>
+
+    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
     
     <script>
         async function fetchAllPromptData(token, nextPage) {
@@ -161,7 +148,7 @@
 
                 const { entities, nextUri } = await response.json();
                 allEntities = [...allEntities, ...entities];
-                nextPage = nextUri ? `https://api.cac1.pure.cloud${nextUri}` : null;
+                nextPage = nextUri ? `https://api.cac1.pure.cloud/${nextUri}` : null;
             }
 
             return allEntities;
