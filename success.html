@@ -115,34 +115,26 @@
 
     <script>
         async function fetchAllPromptData(token) {
-            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=1&pageSize=500`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            let allData = [];
+            let currentPage = 1;
+            let totalPages = 1;
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.status}`);
-            }
-
-            const { entities, totalPages } = await response.json();
-            const allData = [...entities];
-
-            for (let page = 2; page <= totalPages; page++) {
-                const pageResponse = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+            while (currentPage <= totalPages) {
+                const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if (!pageResponse.ok) {
-                    throw new Error(`Failed to fetch data: ${pageResponse.status}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.status}`);
                 }
 
-                const { entities: pageEntities } = await pageResponse.json();
-                allData.push(...pageEntities);
+                const { entities, totalPages: total } = await response.json();
+                allData = [...allData, ...entities];
+                totalPages = total;
+                currentPage++;
             }
 
             return allData;
