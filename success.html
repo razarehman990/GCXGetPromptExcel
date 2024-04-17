@@ -114,8 +114,9 @@
     </div>
 
     <script>
-        async function fetchPromptData(token, page) {
-            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+        async function fetchPromptData(token, nextUri = null) {
+            const uri = nextUri ? nextUri : 'https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500';
+            const response = await fetch(uri, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -129,12 +130,15 @@
             return await response.json();
         }
 
-        async function generateCSV(token, totalPages) {
-            const entities = [];
-            for (let page = 1; page <= totalPages; page++) {
-                const { entities: pageEntities } = await fetchPromptData(token, page);
+        async function generateCSV(token) {
+            let nextUri = null;
+            let entities = [];
+
+            do {
+                const { entities: pageEntities, nextUri: nextPageUri } = await fetchPromptData(token, nextUri);
                 entities.push(...pageEntities);
-            }
+                nextUri = nextPageUri;
+            } while (nextUri);
 
             if (entities.length === 0) {
                 alert('No data found.');
@@ -158,10 +162,13 @@
             return csvContent;
         }
 
+        async function downloadMediaFiles() {
+            // Function to download media files
+        }
+
         async function downloadCSV() {
             const token = new URLSearchParams(window.location.search).get('token');
-            const { totalPages } = await fetchPromptData(token, 1);
-            const csvContent = await generateCSV(token, totalPages);
+            const csvContent = await generateCSV(token);
 
             if (!csvContent) {
                 alert('No data found to export.');
