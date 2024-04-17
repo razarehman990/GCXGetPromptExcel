@@ -178,13 +178,13 @@
 
         async function downloadCSV() {
             const loader = document.querySelector('.loader');
-            const popupContent = document.querySelector('.popup-content');
+            const promptData = document.getElementById('promptData');
             loader.style.display = 'block';
 
             try {
                 const token = new URLSearchParams(window.location.search).get('token');
                 const csvContent = await generateCSV(token);
-                popupContent.innerHTML = csvContent;
+                promptData.innerText = csvContent;
 
                 // Trigger download of CSV file
                 const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -197,7 +197,7 @@
                 document.body.removeChild(link);
             } catch (error) {
                 console.error('Error generating CSV:', error);
-                popupContent.innerHTML = 'Error generating CSV. Please try again later.';
+                promptData.innerText = 'Error generating CSV. Please try again later.';
             } finally {
                 loader.style.display = 'none';
             }
