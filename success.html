@@ -82,6 +82,13 @@
         .failure {
             color: red;
         }
+
+        #output {
+            width: 80%;
+            height: 200px;
+            margin: 20px auto;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +96,7 @@
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
         <h1 id="title">Genesys Prompts Export</h1>
     </div>
+    <textarea id="output" rows="10" cols="50"></textarea>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
     <div class="popup-container" id="popupContainer">
@@ -97,7 +105,6 @@
             <div class="popup-content"></div>
         </div>
     </div>
-    <textarea id="output" rows="10" cols="50"></textarea>
 
     <script>
         async function fetchAllPromptData(token, nextPage) {
@@ -117,7 +124,7 @@
 
                 const { entities, nextUri } = await response.json();
                 allEntities = [...allEntities, ...entities];
-                nextPage = nextUri ? `https://api.cac1.pure.cloud/${nextUri}` : null;
+                nextPage = nextUri ? `https://api.cac1.pure.cloud${nextUri}` : null;
             }
 
             return allEntities;
