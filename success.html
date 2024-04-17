@@ -139,13 +139,22 @@
 
         async function generateCSV(token) {
             const data = await fetchAllPromptData(token);
+            if (data.length === 0) {
+                alert('No data found.');
+                return;
+            }
+
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
             for (const entity of data) {
                 let name = entity.name || '';
                 const type = 'user'; // Fixed value for Type
-                let description = entity.description || ''; // Description from API output
+                let description = entity.description || '';
                 const resources = entity.resources || [];
+
+                // Format description if needed
+                description = description.replace(/"/g, '""'); // Double-quote escaping for CSV
+                description = `"${description}"`;
 
                 for (const resource of resources) {
                     const language = resource.language || '';
@@ -153,7 +162,10 @@
                     const mediaUri = resource.mediaUri || '';
                     let fileName = mediaUri ? `${name}.wav` : ''; // Empty if MediaUri is empty
 
-                    csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+                    // Format TtsString if needed
+                    const formattedTtsString = ttsString.replace(/"/g, '""'); // Double-quote escaping for CSV
+
+                    csvContent += `"${name}","${type}","${language}",${description},"${formattedTtsString}","${mediaUri}","${fileName}"\n`;
                 }
             }
 
@@ -213,6 +225,11 @@
             const token = new URLSearchParams(window.location.search).get('token');
             const csvContent = await generateCSV(token);
             promptData.innerText = csvContent;
+
+            if (!csvContent) {
+                alert('No data found to export.');
+                return;
+            }
 
             // Trigger download of CSV file
             const blob = new Blob([csvContent], { type: 'text/csv' });
