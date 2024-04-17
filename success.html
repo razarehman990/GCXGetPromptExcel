@@ -87,23 +87,27 @@
             color: red;
         }
 
-        #output {
+        #output-container {
+            position: relative; /* Ensure relative positioning for the output container */
             width: 80%;
-            min-height: 200px;
             margin: 20px auto;
+            text-align: left;
+        }
+
+        #output {
+            width: 100%;
+            min-height: 200px;
             display: block;
             overflow-x: auto;
-            text-align: left;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
-            position: relative; /* Ensure relative positioning for the flipping logo */
         }
 
         #flipping-logo {
             height: 50px;
             animation: flip 1s infinite;
-            position: absolute; /* Position the flipping logo relative to the text box */
+            position: absolute; /* Position the flipping logo relative to the output container */
             top: calc(50% - 25px); /* Center the flipping logo vertically */
             left: calc(50% - 25px); /* Center the flipping logo horizontally */
         }
@@ -119,8 +123,10 @@
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
         <h1 id="title"> Genesys Prompt Export </h1>
     </div>
-    <textarea id="output" readonly></textarea>
-    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
+    <div id="output-container">
+        <textarea id="output" readonly></textarea>
+        <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
+    </div>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
