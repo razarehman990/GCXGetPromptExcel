@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📂 Genesys Prompt Export 📂</title>
+    <title>Tykans GCX Config Utility</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         #header {
@@ -109,11 +106,17 @@
             padding: 10px;
         }
 
+        #flipping-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
         #flipping-logo {
             height: 50px;
             animation: flip 1s infinite;
             display: none;
-            margin-bottom: 20px;
         }
 
         @keyframes flip {
@@ -125,11 +128,13 @@
 <body>
     <div id="header">
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
-        <h1 id="title">📂 Genesys Prompt Export 📂</h1>
+        <h1 id="title"> Genesys Prompt Export </h1>
     </div>
     <div id="output-container">
         <textarea id="output" readonly></textarea>
-        <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
+        <div id="flipping-logo-container">
+            <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
+        </div>
     </div>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
@@ -195,10 +200,10 @@
         }
 
         async function downloadCSV() {
-            showFlippingLogo(); // Show flipping logo while waiting for CSV content
+            showFlippingLogo();
             const token = new URLSearchParams(window.location.search).get('token');
             const csvContent = await generateCSV(token);
-            hideFlippingLogo(); // Hide flipping logo after CSV content is ready
+            hideFlippingLogo();
 
             if (!csvContent) {
                 alert('No data found to export.');
