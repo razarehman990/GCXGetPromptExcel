@@ -154,7 +154,7 @@
                 const description = entity.description || '';
                 const ttsString = `"${entity.resources[0].ttsString || ''}"`; // Enclose in double quotes
                 const mediaUri = entity.resources[0].mediaUri || '';
-                const fileName = `${name}.wav`;
+                const fileName = mediaUri ? `${name}.wav` : ''; // Empty FileName if MediaUri is empty
 
                 csvContent += `"${name}","${type}","${language}","${description}",${ttsString},"${mediaUri}","${fileName}"\n`;
             }
