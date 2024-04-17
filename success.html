@@ -114,53 +114,52 @@
     </div>
 
     <script>
-        async function fetchPromptData(token) {
+        async function fetchPromptData(token, page) {
+            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            return await response.json();
+        }
+
+        async function fetchAllPromptData(token) {
             let allEntities = [];
             let currentPage = 1;
-            let totalPages = 1;
 
-            while (currentPage <= totalPages) {
-                const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-                allEntities = [...allEntities, ...data.entities];
-                totalPages = data.totalPages;
+            while (true) {
+                const data = await fetchPromptData(token, currentPage);
+                allEntities.push(...data.entities);
                 currentPage++;
+                if (currentPage > data.totalPages) break;
             }
 
             return allEntities;
         }
 
-async function generateCSV(token) {
-    const data = await fetchPromptData(token);
-    let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
+        async function generateCSV(token) {
+            const data = await fetchAllPromptData(token);
+            let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
-    for (const entity of data) {
-        let name = entity.name || '';
-        const type = 'user'; // Fixed value for Type
-        let description = entity.description || ''; // Description from API output
-        const resources = entity.resources || [];
+            for (const entity of data) {
+                let name = entity.name || '';
+                const type = 'user'; // Fixed value for Type
+                let description = entity.description || ''; // Description from API output
+                const resources = entity.resources || [];
 
-        for (const resource of resources) {
-            const language = resource.language || '';
-            const ttsString = resource.ttsString || '';
-            const mediaUri = resource.mediaUri || '';
-            const fileName = mediaUri ? `${name}.wav` : '';
-            csvContent += `"${name}","${type}","${language}","${description}","${ttsString.replace(/"/g, '""')}","${mediaUri}","${fileName}"\n`;
+                for (const resource of resources) {
+                    const language = resource.language || '';
+                    const ttsString = resource.ttsString || '';
+                    const mediaUri = resource.mediaUri || '';
+                    let fileName = mediaUri ? `${name}.wav` : ''; // Empty if MediaUri is empty
 
-            // Clearing values after first row
-            name = '';
-            description = '';
+                    csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+                }
+            }
+
+            return csvContent;
         }
-    }
-
-    return csvContent;
-}
 
         async function downloadMediaFiles() {
             const promptData = document.getElementById('promptData');
@@ -168,7 +167,7 @@ async function generateCSV(token) {
             promptData.innerText = '';
             popupContent.innerHTML = '';
             const token = new URLSearchParams(window.location.search).get('token');
-            const data = await fetchPromptData(token);
+            const data = await fetchAllPromptData(token);
             const fileCount = data.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
             let completed = 0;
 
