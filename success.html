@@ -114,27 +114,28 @@
     </div>
 
     <script>
-        async function fetchPromptData(token, page) {
-            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+        async function fetchAllPromptData(token) {
+            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=1&pageSize=500`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            return await response.json();
-        }
-
-        async function fetchAllPromptData(token) {
-            const firstResponse = await fetchPromptData(token, 1);
-            const totalPages = firstResponse.totalPages;
-            let allEntities = [];
+            const { totalPages } = await response.json();
+            const allData = [];
 
             for (let page = 1; page <= totalPages; page++) {
-                const data = await fetchPromptData(token, page);
-                allEntities.push(...data.entities);
+                const pageResponse = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const pageData = await pageResponse.json();
+                allData.push(...pageData.entities);
             }
 
-            return allEntities;
+            return allData;
         }
 
         async function generateCSV(token) {
@@ -158,14 +159,14 @@
 
                 for (const resource of resources) {
                     const language = resource.language || '';
-                    const ttsString = resource.ttsString || '';
+                    let ttsString = resource.ttsString || '';
                     const mediaUri = resource.mediaUri || '';
                     let fileName = mediaUri ? `${name}.wav` : ''; // Empty if MediaUri is empty
 
                     // Format TtsString if needed
-                    const formattedTtsString = ttsString.replace(/"/g, '""'); // Double-quote escaping for CSV
+                    ttsString = ttsString.replace(/"/g, '""'); // Double-quote escaping for CSV
 
-                    csvContent += `"${name}","${type}","${language}",${description},"${formattedTtsString}","${mediaUri}","${fileName}"\n`;
+                    csvContent += `"${name}","${type}","${language}",${description},"${ttsString}","${mediaUri}","${fileName}"\n`;
                 }
             }
 
