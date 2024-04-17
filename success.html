@@ -9,11 +9,13 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         #header {
             display: flex;
             align-items: center;
+            justify-content: center;
             padding: 10px;
             background-color: #f3f3f3;
         }
@@ -85,9 +87,26 @@
 
         #output {
             width: 80%;
-            height: 200px;
+            height: 300px;
             margin: 20px auto;
             display: block;
+            overflow-x: auto;
+            text-align: left;
+        }
+
+        #output table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        #output th, #output td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        #output th {
+            background-color: #f3f3f3;
         }
     </style>
 </head>
@@ -96,7 +115,8 @@
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
         <h1 id="title">Genesys Prompts Export</h1>
     </div>
-    <textarea id="output" rows="10" cols="50"></textarea>
+    <textarea id="output" rows="10" readonly></textarea>
+    <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
     <div class="popup-container" id="popupContainer">
