@@ -5,113 +5,185 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Genesys Prompts Export</title>
     <style>
-        /* CSS styles remain unchanged */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f3f3f3;
+        }
+
+        #logo {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        #title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #promptData {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-width: 80%;
+            overflow-x: auto;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #003366;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #007bff; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            z-index: 9999;
+        }
+
+        .popup-content {
+            font-size: 14px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .failure {
+            color: red;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="header">
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
-        <h1>Genesys Prompts Export</h1>
-        <div id="promptData"></div>
-        <button id="downloadMediaFilesBtn" onclick="downloadMediaFiles()">Download Media Files</button>
-        <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV File</button>
-        <div class="loader"></div>
-        <div id="popup" class="popup">
-            <div class="popup-content"></div>
-        </div>
+        <h1 id="title">Genesys Prompts Export</h1>
+    </div>
+    <div id="promptData"></div>
+    <button id="downloadMediaFilesBtn" class="button" onclick="downloadMediaFiles()">Download Media Files</button>
+    <button id="downloadCSVBtn" class="button" onclick="downloadCSV()">Download CSV File</button>
+    <div class="loader"></div>
+    <div id="popup" class="popup">
+        <div class="popup-content"></div>
     </div>
 
     <script>
-        // Function to retrieve all pages of prompt data
-        async function fetchAllPromptData(token) {
-            // Function body remains unchanged
+        async function fetchPromptData(token) {
+            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=1&pageSize=500`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            return await response.json();
         }
 
-        // Function to retrieve prompt data for a specific page
-        async function fetchPromptData(token, page) {
-            // Function body remains unchanged
-        }
-
-        // Function to generate CSV data from the prompt data
         async function generateCSV(token) {
-            // Function body remains unchanged
+            const data = await fetchPromptData(token);
+            let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
+
+            for (const entity of data.entities) {
+                const name = entity.name || '';
+                const description = entity.description || '';
+                const resources = entity.resources || [];
+
+                for (const resource of resources) {
+                    const language = resource.language || '';
+                    const ttsString = resource.ttsString || '';
+                    const mediaUri = resource.mediaUri || '';
+                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
+                }
+            }
+
+            return csvContent;
         }
 
-        // Function to download media files
         async function downloadMediaFiles() {
             const loader = document.querySelector('.loader');
             const popupContent = document.querySelector('.popup-content');
-            const promptDataDiv = document.getElementById('promptData');
-            popupContent.innerHTML = '';
+            loader.style.display = 'block';
 
             try {
                 const token = new URLSearchParams(window.location.search).get('token');
-                const allData = await fetchAllPromptData(token);
-                let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri\n';
-
-                for (const entity of allData) {
-                    const name = entity.name || '';
-                    const description = entity.description || '';
-                    const resources = entity.resources || [];
-
-                    for (const resource of resources) {
-                        const language = resource.language || '';
-                        const ttsString = resource.ttsString || '';
-                        const mediaUri = resource.mediaUri || '';
-
-                        // Append a new line to the CSV content with the fields separated by commas
-                        csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}"\n`;
-
-                        if (mediaUri.toLowerCase().endsWith('.wav')) {
-                            try {
-                                const success = await downloadMediaFile(name, mediaUri);
-                                if (success) {
-                                    popupContent.innerHTML += `<p class="success">✔️ Success: ${name}</p>`;
-                                } else {
-                                    popupContent.innerHTML += `<p class="failure">❌ Failure: ${name}</p>`;
-                                }
-                            } catch (error) {
-                                console.error('Error downloading media file:', error);
-                                popupContent.innerHTML += `<p class="failure">❌ Failure: ${name}</p>`;
-                            }
-                        }
-                    }
-                }
-
-                // Display status popup
-                document.getElementById('popup').style.display = 'block';
-                loader.style.display = 'none';
-                promptDataDiv.innerText = 'All media files downloaded successfully!';
+                const csvContent = await generateCSV(token);
+                popupContent.innerHTML = 'Generating CSV...';
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const csvUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = csvUrl;
+                link.download = 'prompts.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                popupContent.innerHTML = 'CSV downloaded successfully!';
             } catch (error) {
-                console.error('Error downloading media files:', error);
+                console.error('Error downloading CSV:', error);
+                popupContent.innerHTML = 'Error downloading CSV. Please try again later.';
+            } finally {
                 loader.style.display = 'none';
-                promptDataDiv.innerText = 'Failed to download media files!';
             }
         }
 
-        // Function to download media file
-        async function downloadMediaFile(name, mediaUri) {
-            try {
-                const response = await fetch(mediaUri);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = name;
-                    link.click();
-                    return true;
-                } else {
-                    throw new Error('Failed to download media file: ' + response.status);
-                }
-            } catch (error) {
-                console.error('Error downloading media file:', error);
-                return false;
-            }
-        }
-
-        // Function to download CSV file
         async function downloadCSV() {
-            // Function body remains unchanged
+            const loader = document.querySelector('.loader');
+            const popupContent = document.querySelector('.popup-content');
+            loader.style.display = 'block';
+
+            try {
+                const token = new URLSearchParams(window.location.search).get('token');
+                const csvContent = await generateCSV(token);
+                popupContent.innerHTML = csvContent;
+            } catch (error) {
+                console.error('Error generating CSV:', error);
+                popupContent.innerHTML = 'Error generating CSV. Please try again later.';
+            } finally {
+                loader.style.display = 'none';
+            }
         }
     </script>
 </body>
