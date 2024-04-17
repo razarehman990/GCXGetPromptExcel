@@ -192,25 +192,46 @@ async function downloadMediaFiles() {
     const token = new URLSearchParams(window.location.search).get('token');
     const data = await fetchAllPromptData(token, 'https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500');
 
+    const outputTextArea = document.getElementById('output');
+    outputTextArea.value = ''; // Clear existing content
+
     for (const entity of data) {
         const name = entity.name || '';
         const mediaUri = entity.resources[0] ? entity.resources[0].mediaUri || '' : '';
 
         if (mediaUri) {
-            const response = await fetch(mediaUri);
+            try {
+                const response = await fetch(mediaUri);
 
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
 
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${name}.wav`; // Set the download attribute to specify file name
-                link.style.display = 'none'; // Hide the link
-                document.body.appendChild(link);
-                link.click(); // Simulate click to trigger download
-                document.body.removeChild(link);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${name}.wav`; // Set the download attribute to specify file name
+                    link.style.display = 'none'; // Hide the link
+                    document.body.appendChild(link);
+                    link.click(); // Simulate click to trigger download
+                    document.body.removeChild(link);
+
+                    // Update status in text box
+                    outputTextArea.value += `✅ Downloaded ${name}.wav\n`;
+                    outputTextArea.scrollTop = outputTextArea.scrollHeight; // Scroll to bottom
+                } else {
+                    // Update status in text box
+                    outputTextArea.value += `❌ Failed to download ${name}.wav\n`;
+                    outputTextArea.scrollTop = outputTextArea.scrollHeight; // Scroll to bottom
+                }
+            } catch (error) {
+                // Update status in text box
+                outputTextArea.value += `❌ Error while downloading ${name}.wav\n`;
+                outputTextArea.scrollTop = outputTextArea.scrollHeight; // Scroll to bottom
             }
+        } else {
+            // Update status in text box for empty mediaUri
+            outputTextArea.value += `❌ Media URI not found for ${name}\n`;
+            outputTextArea.scrollTop = outputTextArea.scrollHeight; // Scroll to bottom
         }
     }
 
