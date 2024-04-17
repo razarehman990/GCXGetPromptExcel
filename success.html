@@ -185,6 +185,16 @@
                 const token = new URLSearchParams(window.location.search).get('token');
                 const csvContent = await generateCSV(token);
                 popupContent.innerHTML = csvContent;
+
+                // Trigger download of CSV file
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const csvUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = csvUrl;
+                link.download = 'prompts.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             } catch (error) {
                 console.error('Error generating CSV:', error);
                 popupContent.innerHTML = 'Error generating CSV. Please try again later.';
