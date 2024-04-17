@@ -7,11 +7,25 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 14px; /* Adjust font size */
+            margin: 0;
+            padding: 0;
         }
 
-        #container {
-            margin: 20px;
+        #header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f3f3f3;
+        }
+
+        #logo {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        #title {
+            font-size: 24px;
+            margin-bottom: 10px;
         }
 
         #promptData {
@@ -22,86 +36,84 @@
             background-color: #f9f9f9;
             max-width: 80%;
             overflow-x: auto;
+            resize: vertical;
+            min-height: 150px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
         }
 
-        #downloadMediaFilesBtn, #downloadCSVBtn {
+        .button {
             margin-top: 20px;
             padding: 10px 20px;
-            background-color: #1E90FF; /* Dark navy blue */
+            background-color: #003366;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        .loader {
-            border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #1E90FF; /* Dark navy blue */
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
+        .popup-container {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 9999;
         }
 
         .popup {
-            display: none;
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
             background-color: #f9f9f9;
-            padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            max-width: 80%;
-            max-height: 80%;
-            overflow-y: auto;
-            z-index: 9999; /* Ensure it's above other elements */
+            width: 50%;
+            margin: 15% auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .close:hover {
+            color: red;
         }
 
         .popup-content {
             font-size: 14px;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
+        .success {
+            color: green;
         }
 
-        .close-btn:hover {
+        .failure {
             color: red;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <img src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo" width="150px">
-        <h1>Genesys Prompts Export</h1>
-        <div id="promptData"></div>
-        <button id="downloadMediaFilesBtn" onclick="downloadMediaFiles()">Download Media Files</button>
-        <button id="downloadCSVBtn" onclick="downloadCSV()">Download CSV File</button>
-        <div class="loader"></div>
-        <div id="popup" class="popup">
-            <span class="close-btn" onclick="closePopup()">X</span>
+    <div id="header">
+        <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
+        <h1 id="title">Genesys Prompts Export</h1>
+    </div>
+    <div id="promptData"></div>
+    <button id="downloadMediaFilesBtn" class="button" onclick="downloadMediaFiles()">Download Media Files</button>
+    <button id="downloadCSVBtn" class="button" onclick="downloadCSV()">Download CSV File</button>
+    <div class="popup-container" id="popupContainer">
+        <div class="popup" id="popup">
+            <span class="close" onclick="closePopup()">&times;</span>
             <div class="popup-content"></div>
         </div>
     </div>
 
     <script>
-        // Function to retrieve prompt data
         async function fetchPromptData(token) {
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=1&pageSize=500`, {
                 method: 'GET',
@@ -112,52 +124,44 @@
             return await response.json();
         }
 
-        // Function to generate CSV data from the prompt data
-        async function generateCSV(token) {
-            const data = await fetchPromptData(token);
-            let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
+async function generateCSV(token) {
+    const data = await fetchPromptData(token);
+    let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
-            for (const entity of data.entities) {
-                const name = entity.name || '';
-                const description = entity.description || '';
-                const resources = entity.resources || [];
+    for (const entity of data.entities) {
+        const name = entity.name || '';
+        const description = entity.description || '';
+        const resources = entity.resources || [];
 
-                for (const resource of resources) {
-                    const language = resource.language || '';
-                    const ttsString = resource.ttsString || '';
-                    const mediaUri = resource.mediaUri || '';
-                    const fileName = `${name}.wav`;
-                    csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
-                }
-            }
-
-            return csvContent;
+        for (const resource of resources) {
+            const language = resource.language || '';
+            const ttsString = resource.ttsString || '';
+            const mediaUri = resource.mediaUri || '';
+            const fileName = `${name}.wav`;
+            csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
         }
+    }
 
-        // Function to download CSV file
-        async function downloadCSV() {
-            const token = new URLSearchParams(window.location.search).get('token');
-            const csvData = await generateCSV(token);
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = 'genesys_prompts.csv';
-            link.click();
-        }
+    return csvContent;
+}
 
-        // Function to download media files
         async function downloadMediaFiles() {
+            const promptData = document.getElementById('promptData');
+            const popupContent = document.querySelector('.popup-content');
+            promptData.innerText = '';
+            popupContent.innerHTML = '';
             const token = new URLSearchParams(window.location.search).get('token');
             const data = await fetchPromptData(token);
-            const popupContent = document.querySelector('.popup-content');
-            popupContent.innerHTML = ''; // Clear previous content
+            const fileCount = data.entities.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
+            let completed = 0;
 
             for (const entity of data.entities) {
                 const resources = entity.resources || [];
 
                 for (const resource of resources) {
                     const mediaUri = resource.mediaUri || '';
-                    const fileName = `${entity.name}.wav`;
+                    const name = entity.name || '';
+                    const fileName = `${name}.wav`;
 
                     try {
                         const response = await fetch(mediaUri);
@@ -166,31 +170,56 @@
                             const link = document.createElement('a');
                             link.href = window.URL.createObjectURL(blob);
                             link.download = fileName;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
                             link.click();
-                            showPopup(`File "${fileName}" downloaded successfully.`);
+                            document.body.removeChild(link);
+                            showStatus(fileName, true);
                         } else {
                             throw new Error(`Failed to download media file: ${response.status}`);
                         }
                     } catch (error) {
                         console.error('Error downloading media file:', error);
-                        showPopup(`Error downloading file "${fileName}": ${error.message}`);
+                        showStatus(fileName, false);
                     }
+
+                    completed++;
+                    const progress = Math.floor((completed / fileCount) * 100);
+                    popupContent.innerHTML = `<p class="success">Downloading media files: ${progress}%</p>`;
                 }
             }
+
+            popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
+            document.getElementById('popupContainer').style.display = 'block';
         }
 
-        // Function to show popup with message
-        function showPopup(message) {
-            const popup = document.getElementById('popup');
-            const popupContent = document.querySelector('.popup-content');
-            popupContent.innerHTML += `<p>${message}</p>`;
-            popup.style.display = 'block';
+        async function downloadCSV() {
+            const promptData = document.getElementById('promptData');
+            const token = new URLSearchParams(window.location.search).get('token');
+            const csvContent = await generateCSV(token);
+            promptData.innerText = csvContent;
+
+            // Trigger download of CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const csvUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = csvUrl;
+            link.download = 'prompts.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        // Function to close popup
+        function showStatus(fileName, success) {
+            const promptData = document.getElementById('promptData');
+            const status = success ? 'Success' : 'Failure';
+            const statusClass = success ? 'success' : 'failure';
+            const icon = success ? '✔️' : '❌';
+            promptData.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
+        }
+
         function closePopup() {
-            const popup = document.getElementById('popup');
-            popup.style.display = 'none';
+            document.getElementById('popupContainer').style.display = 'none';
         }
     </script>
 </body>
