@@ -115,25 +115,27 @@
 
     <script>
         async function fetchAllPromptData(token, currentPage = 1) {
-            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+            let allEntities = [];
+            let nextPage = `https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500`;
+
+            while (nextPage) {
+                const response = await fetch(nextPage, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.status}`);
                 }
-            });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data: ${response.status}`);
+                const { entities, nextPage: nextUri } = await response.json();
+                allEntities = [...allEntities, ...entities];
+                nextPage = nextUri;
             }
 
-            const { entities, totalPages } = await response.json();
-
-            if (currentPage < totalPages) {
-                const nextData = await fetchAllPromptData(token, currentPage + 1);
-                return [...entities, ...nextData];
-            }
-
-            return entities;
+            return allEntities;
         }
 
         async function generateCSV(token) {
