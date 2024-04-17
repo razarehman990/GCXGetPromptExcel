@@ -121,18 +121,28 @@
                     'Authorization': `Bearer ${token}`
                 }
             });
-            const { totalPages } = await response.json();
-            const allData = [];
 
-            for (let page = 1; page <= totalPages; page++) {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.status}`);
+            }
+
+            const { entities, totalPages } = await response.json();
+            const allData = [...entities];
+
+            for (let page = 2; page <= totalPages; page++) {
                 const pageResponse = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${page}&pageSize=500`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                const pageData = await pageResponse.json();
-                allData.push(...pageData.entities);
+
+                if (!pageResponse.ok) {
+                    throw new Error(`Failed to fetch data: ${pageResponse.status}`);
+                }
+
+                const { entities: pageEntities } = await pageResponse.json();
+                allData.push(...pageEntities);
             }
 
             return allData;
@@ -140,6 +150,7 @@
 
         async function generateCSV(token) {
             const data = await fetchAllPromptData(token);
+
             if (data.length === 0) {
                 alert('No data found.');
                 return;
@@ -148,91 +159,33 @@
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
             for (const entity of data) {
-                let name = entity.name || '';
-                const type = 'user'; // Fixed value for Type
-                let description = entity.description || '';
-                const resources = entity.resources || [];
+                const name = entity.name || '';
+                const type = 'user'; // Fixed value
+                const language = entity.resources[0].language || '';
+                const description = entity.description || '';
+                const ttsString = entity.resources[0].ttsString || '';
+                const mediaUri = entity.resources[0].mediaUri || '';
+                const fileName = `${name}.wav`;
 
-                // Format description if needed
-                description = description.replace(/"/g, '""'); // Double-quote escaping for CSV
-                description = `"${description}"`;
-
-                for (const resource of resources) {
-                    const language = resource.language || '';
-                    let ttsString = resource.ttsString || '';
-                    const mediaUri = resource.mediaUri || '';
-                    let fileName = mediaUri ? `${name}.wav` : ''; // Empty if MediaUri is empty
-
-                    // Format TtsString if needed
-                    ttsString = ttsString.replace(/"/g, '""'); // Double-quote escaping for CSV
-
-                    csvContent += `"${name}","${type}","${language}",${description},"${ttsString}","${mediaUri}","${fileName}"\n`;
-                }
+                csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
             }
 
             return csvContent;
         }
 
         async function downloadMediaFiles() {
-            const promptData = document.getElementById('promptData');
-            const popupContent = document.querySelector('.popup-content');
-            promptData.innerText = '';
-            popupContent.innerHTML = '';
-            const token = new URLSearchParams(window.location.search).get('token');
-            const data = await fetchAllPromptData(token);
-            const fileCount = data.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
-            let completed = 0;
-
-            for (const entity of data) {
-                const resources = entity.resources || [];
-
-                for (const resource of resources) {
-                    const mediaUri = resource.mediaUri || '';
-                    const name = entity.name || '';
-                    const fileName = mediaUri ? `${name}.wav` : '';
-
-                    try {
-                        const response = await fetch(mediaUri);
-                        if (response.ok) {
-                            const blob = await response.blob();
-                            const link = document.createElement('a');
-                            link.href = window.URL.createObjectURL(blob);
-                            link.download = fileName;
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            showStatus(fileName, true);
-                        } else {
-                            throw new Error(`Failed to download media file: ${response.status}`);
-                        }
-                    } catch (error) {
-                        console.error('Error downloading media file:', error);
-                        showStatus(fileName, false);
-                    }
-
-                    completed++;
-                    const progress = Math.floor((completed / fileCount) * 100);
-                    popupContent.innerHTML = `<p class="success">Downloading media files: ${progress}%</p>`;
-                }
-            }
-
-            popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
-            document.getElementById('popupContainer').style.display = 'block';
+            // Function to download media files
         }
 
         async function downloadCSV() {
-            const promptData = document.getElementById('promptData');
             const token = new URLSearchParams(window.location.search).get('token');
             const csvContent = await generateCSV(token);
-            promptData.innerText = csvContent;
 
             if (!csvContent) {
                 alert('No data found to export.');
                 return;
             }
 
-            // Trigger download of CSV file
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const csvUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -241,14 +194,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function showStatus(fileName, success) {
-            const promptData = document.getElementById('promptData');
-            const status = success ? 'Success' : 'Failure';
-            const statusClass = success ? 'success' : 'failure';
-            const icon = success ? '✔️' : '❌';
-            promptData.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
         }
 
         function closePopup() {
