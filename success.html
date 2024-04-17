@@ -51,21 +51,6 @@
             cursor: pointer;
         }
 
-        .loader {
-            border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #007bff; /* Blue */
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-        }
-
         .popup {
             display: none;
             position: fixed;
@@ -93,11 +78,6 @@
         .failure {
             color: red;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -108,7 +88,6 @@
     <div id="promptData"></div>
     <button id="downloadMediaFilesBtn" class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button id="downloadCSVBtn" class="button" onclick="downloadCSV()">Download CSV File</button>
-    <div class="loader"></div>
     <div id="popup" class="popup">
         <div class="popup-content"></div>
     </div>
@@ -145,91 +124,73 @@
         }
 
         async function downloadMediaFiles() {
-            const loader = document.querySelector('.loader');
             const promptData = document.getElementById('promptData');
             const popupContent = document.querySelector('.popup-content');
-            loader.style.display = 'block';
+            promptData.innerText = '';
+            popupContent.innerHTML = '';
+            const token = new URLSearchParams(window.location.search).get('token');
+            const data = await fetchPromptData(token);
 
-            try {
-                const token = new URLSearchParams(window.location.search).get('token');
-                const data = await fetchPromptData(token);
-                promptData.innerText = '';
-                popupContent.innerHTML = '';
+            for (const entity of data.entities) {
+                const resources = entity.resources || [];
 
-                for (const entity of data.entities) {
-                    const resources = entity.resources || [];
+                for (const resource of resources) {
+                    const mediaUri = resource.mediaUri || '';
+                    const name = entity.name || '';
+                    const fileName = `${name}.wav`;
 
-                    for (const resource of resources) {
-                        const mediaUri = resource.mediaUri || '';
-                        const name = entity.name || '';
-                        const fileName = `${name}.wav`;
-
-                        try {
-                            const response = await fetch(mediaUri);
-                            if (response.ok) {
-                                const blob = await response.blob();
-                                const link = document.createElement('a');
-                                link.href = window.URL.createObjectURL(blob);
-                                link.download = fileName;
-                                link.style.display = 'none';
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                showStatus(fileName, true);
-                            } else {
-                                throw new Error(`Failed to download media file: ${response.status}`);
-                            }
-                        } catch (error) {
-                            console.error('Error downloading media file:', error);
-                            showStatus(fileName, false);
+                    try {
+                        const response = await fetch(mediaUri);
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = fileName;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            showStatus(fileName, true);
+                        } else {
+                            throw new Error(`Failed to download media file: ${response.status}`);
                         }
-                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } catch (error) {
+                        console.error('Error downloading media file:', error);
+                        showStatus(fileName, false);
                     }
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
-
-                popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
-            } catch (error) {
-                console.error('Error downloading media files:', error);
-                popupContent.innerHTML += `<p class="failure">${error.message}</p>`;
-            } finally {
-                loader.style.display = 'none';
             }
+
+            popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
         }
 
         async function downloadCSV() {
-            const loader = document.querySelector('.loader');
             const promptData = document.getElementById('promptData');
-            loader.style.display = 'block';
+            const token = new URLSearchParams(window.location.search).get('token');
+            const csvContent = await generateCSV(token);
+            promptData.innerText = csvContent;
 
-            try {
-                const token = new URLSearchParams(window.location.search).get('token');
-                const csvContent = await generateCSV(token);
-                promptData.innerText = csvContent;
-
-                // Trigger download of CSV file
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const csvUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = csvUrl;
-                link.download = 'prompts.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (error) {
-                console.error('Error generating CSV:', error);
-                promptData.innerText = 'Error generating CSV. Please try again later.';
-            } finally {
-                loader.style.display = 'none';
-            }
+            // Trigger download of CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const csvUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = csvUrl;
+            link.download = 'prompts.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function showStatus(fileName, success) {
+            const popup = document.getElementById('popup');
             const popupContent = document.querySelector('.popup-content');
             const status = success ? 'Success' : 'Failure';
             const statusClass = success ? 'success' : 'failure';
             const icon = success ? '✔️' : '❌';
 
             popupContent.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
+            popup.style.display = 'block';
         }
     </script>
 </body>
