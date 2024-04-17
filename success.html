@@ -137,7 +137,7 @@
             do {
                 const { entities: pageEntities, nextUri: nextPageUri } = await fetchPromptData(token, nextUri);
                 entities.push(...pageEntities);
-                nextUri = nextPageUri;
+                nextUri = nextPageUri ? `https://api.cac1.pure.cloud${nextPageUri}` : null;
             } while (nextUri);
 
             if (entities.length === 0) {
