@@ -150,7 +150,8 @@
             popupContent.innerHTML = '';
             const token = new URLSearchParams(window.location.search).get('token');
             const data = await fetchPromptData(token);
-            document.getElementById('popupContainer').style.display = 'block';
+            const fileCount = data.entities.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
+            let completed = 0;
 
             for (const entity of data.entities) {
                 const resources = entity.resources || [];
@@ -179,11 +180,15 @@
                         console.error('Error downloading media file:', error);
                         showStatus(fileName, false);
                     }
-                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    completed++;
+                    const progress = Math.floor((completed / fileCount) * 100);
+                    popupContent.innerHTML = `<p class="success">Downloading media files: ${progress}%</p>`;
                 }
             }
 
             popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
+            document.getElementById('popupContainer').style.display = 'block';
         }
 
         async function downloadCSV() {
@@ -208,7 +213,6 @@
             const status = success ? 'Success' : 'Failure';
             const statusClass = success ? 'success' : 'failure';
             const icon = success ? '✔️' : '❌';
-
             promptData.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
         }
 
