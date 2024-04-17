@@ -129,18 +129,20 @@ async function generateCSV(token) {
     let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
     for (const entity of data.entities) {
-        const name = entity.name || '';
+        let name = entity.name || '';
         const description = entity.description || '';
         const resources = entity.resources || [];
 
         for (const resource of resources) {
+            const type = resource.type || '';
             const language = resource.language || '';
+            const description = resource.description || '';
             const ttsString = resource.ttsString || '';
             const mediaUri = resource.mediaUri || '';
             const fileName = mediaUri ? `${name}.wav` : '';
-            csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+            csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
 
-            // Include name only once for each resource
+            // Clearing values after first row
             name = '';
         }
     }
