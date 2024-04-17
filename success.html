@@ -130,17 +130,17 @@ async function generateCSV(token) {
 
     for (const entity of data.entities) {
         let name = entity.name || '';
-        const description = entity.description || '';
+        let type = 'user'; // Fixed value for Type
+        let description = ''; // Initialize description
         const resources = entity.resources || [];
 
         for (const resource of resources) {
-            const type = resource.type || '';
+            description = resource.description || ''; // Update description
             const language = resource.language || '';
-            const description = resource.description || '';
             const ttsString = resource.ttsString || '';
             const mediaUri = resource.mediaUri || '';
             const fileName = mediaUri ? `${name}.wav` : '';
-            csvContent += `"${name}","${type}","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
+            csvContent += `"${name}","${type}","${language}","${description.replace(/"/g, '""')}","${ttsString.replace(/"/g, '""')}","${mediaUri}","${fileName}"\n`;
 
             // Clearing values after first row
             name = '';
@@ -165,7 +165,7 @@ async function generateCSV(token) {
 
                 for (const resource of resources) {
                     const mediaUri = resource.mediaUri || '';
-                    let name = entity.name || '';
+                    const name = entity.name || '';
                     const fileName = `${name}.wav`;
 
                     try {
