@@ -38,6 +38,7 @@
             overflow-x: auto;
             resize: vertical;
             min-height: 150px;
+            font-family: Arial, sans-serif;
         }
 
         .button {
@@ -145,18 +146,16 @@
 
         async function downloadMediaFiles() {
             const loader = document.querySelector('.loader');
-            const popupContent = document.querySelector('.popup-content');
+            const promptData = document.getElementById('promptData');
             loader.style.display = 'block';
 
             try {
                 const token = new URLSearchParams(window.location.search).get('token');
                 const csvContent = await generateCSV(token);
-                popupContent.innerHTML = 'Downloading media files...';
+                promptData.innerText = csvContent;
 
                 // Simulate downloading media files (replace with actual download logic)
                 await new Promise(resolve => setTimeout(resolve, 2000));
-
-                popupContent.innerHTML += '<br>All media files downloaded successfully!';
 
                 // Once media files are downloaded, trigger the download of CSV file
                 const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -167,10 +166,9 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                popupContent.innerHTML += '<br>CSV downloaded successfully!';
             } catch (error) {
                 console.error('Error downloading media files:', error);
-                popupContent.innerHTML = 'Error downloading media files. Please try again later.';
+                promptData.innerText = 'Error downloading media files. Please try again later.';
             } finally {
                 loader.style.display = 'none';
             }
