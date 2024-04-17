@@ -197,19 +197,29 @@ async function downloadMediaFiles() {
         const mediaUri = entity.resources[0] ? entity.resources[0].mediaUri || '' : '';
 
         if (mediaUri) {
-            const link = document.createElement('a');
-            link.href = mediaUri;
-            link.download = `${name}.wav`; // Set the download attribute to specify file name
-            link.style.display = 'none'; // Hide the link
-            document.body.appendChild(link);
-            link.click(); // Simulate click to trigger download
-            document.body.removeChild(link);
+            const response = await fetch(mediaUri, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${name}.wav`; // Set the download attribute to specify file name
+                link.style.display = 'none'; // Hide the link
+                document.body.appendChild(link);
+                link.click(); // Simulate click to trigger download
+                document.body.removeChild(link);
+            }
         }
     }
 
     hideFlippingLogo();
 }
-
 
         async function downloadCSV() {
             showFlippingLogo();
