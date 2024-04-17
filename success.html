@@ -5,116 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Genesys Prompts Export</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        #header {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background-color: #f3f3f3;
-        }
-
-        #logo {
-            height: 50px;
-            margin-right: 10px;
-        }
-
-        #title {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        #promptData {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            max-width: 80%;
-            overflow-x: auto;
-            resize: vertical;
-            min-height: 150px;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #003366;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .popup-container {
-            display: none;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-        }
-
-        .popup {
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 50%;
-            margin: 15% auto;
-            padding: 20px;
-            position: relative;
-        }
-
-        .close {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            cursor: pointer;
-            font-size: 20px;
-        }
-
-        .close:hover {
-            color: red;
-        }
-
-        .popup-content {
-            font-size: 14px;
-        }
-
-        .success {
-            color: green;
-        }
-
-        .failure {
-            color: red;
-        }
+        /* CSS styles */
     </style>
 </head>
 <body>
-    <div id="header">
-        <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
-        <h1 id="title">Genesys Prompts Export</h1>
-    </div>
-    <div id="promptData"></div>
-    <button id="downloadMediaFilesBtn" class="button" onclick="downloadMediaFiles()">Download Media Files</button>
-    <button id="downloadCSVBtn" class="button" onclick="downloadCSV()">Download CSV File</button>
-    <div class="popup-container" id="popupContainer">
-        <div class="popup" id="popup">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <div class="popup-content"></div>
-        </div>
-    </div>
-
+    <!-- HTML body content -->
     <script>
         async function fetchAllPromptData(token, currentPage = 1) {
+            console.log(`Fetching data for page ${currentPage}`);
             const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
                 method: 'GET',
                 headers: {
@@ -127,12 +25,16 @@
             }
 
             const { entities, totalPages } = await response.json();
+            console.log(`Total pages: ${totalPages}`);
 
             if (currentPage < totalPages) {
+                console.log(`Fetching data for next page...`);
                 const nextData = await fetchAllPromptData(token, currentPage + 1);
+                console.log(`Merging data from page ${currentPage} with data from next page`);
                 return [...entities, ...nextData];
             }
 
+            console.log(`Data fetched for all pages.`);
             return entities;
         }
 
@@ -182,10 +84,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function closePopup() {
-            document.getElementById('popupContainer').style.display = 'none';
         }
     </script>
 </body>
