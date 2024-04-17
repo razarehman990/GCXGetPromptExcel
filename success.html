@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Tykans GCX Config Utility </title>
+    <title>Genesys Prompt Export</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -89,32 +89,21 @@
 
         #output {
             width: 80%;
-            height: 300px;
+            min-height: 200px;
             margin: 20px auto;
             display: block;
             overflow-x: auto;
             text-align: left;
-        }
-
-        #output table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        #output th, #output td {
             border: 1px solid #ccc;
-            padding: 8px;
-        }
-
-        #output th {
-            background-color: #f3f3f3;
+            border-radius: 5px;
+            padding: 10px;
         }
 
         #flipping-logo {
             height: 50px;
             animation: flip 1s infinite;
             display: none;
+            margin-bottom: 20px;
         }
 
         @keyframes flip {
@@ -126,9 +115,9 @@
 <body>
     <div id="header">
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
-        <h1 id="title"> Genesys Prompt Export </h1>
+        <h1 id="title">Genesys Prompt Export</h1>
     </div>
-    <div id="output"></div>
+    <textarea id="output" readonly></textarea>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
@@ -139,7 +128,7 @@
         </div>
     </div>
 
-    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=2147483647&v=beta&t=gKclfImp9n7_jxYNpAgbgTCV33-QT1_WAEf_g_pinGg" alt="Flipping Logo">
+    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
     
     <script>
         async function fetchAllPromptData(token, nextPage) {
@@ -195,8 +184,10 @@
         }
 
         async function downloadCSV() {
+            showFlippingLogo();
             const token = new URLSearchParams(window.location.search).get('token');
             const csvContent = await generateCSV(token);
+            hideFlippingLogo();
 
             if (!csvContent) {
                 alert('No data found to export.');
@@ -212,8 +203,7 @@
             link.click();
             document.body.removeChild(link);
 
-            // Show CSV content in the output textarea
-            document.getElementById('output').innerText = csvContent;
+            document.getElementById('output').value = csvContent;
         }
 
         function closePopup() {
