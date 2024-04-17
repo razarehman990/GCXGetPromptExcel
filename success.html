@@ -28,20 +28,6 @@
             margin-bottom: 10px;
         }
 
-        #promptData {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            max-width: 80%;
-            overflow-x: auto;
-            resize: vertical;
-            min-height: 150px;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-
         .button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -103,15 +89,15 @@
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
         <h1 id="title">Genesys Prompts Export</h1>
     </div>
-    <div id="promptData"></div>
-    <button id="downloadMediaFilesBtn" class="button" onclick="downloadMediaFiles()">Download Media Files</button>
-    <button id="downloadCSVBtn" class="button" onclick="downloadCSV()">Download CSV File</button>
+    <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
+    <button class="button" onclick="downloadCSV()">Download CSV File</button>
     <div class="popup-container" id="popupContainer">
         <div class="popup" id="popup">
             <span class="close" onclick="closePopup()">&times;</span>
             <div class="popup-content"></div>
         </div>
     </div>
+    <textarea id="output" rows="10" cols="50"></textarea>
 
     <script>
         async function fetchAllPromptData(token, nextPage) {
@@ -131,7 +117,7 @@
 
                 const { entities, nextUri } = await response.json();
                 allEntities = [...allEntities, ...entities];
-                nextPage = nextUri ? `https://api.cac1.pure.cloud${nextUri}` : null;
+                nextPage = nextUri ? `https://api.cac1.pure.cloud/${nextUri}` : null;
             }
 
             return allEntities;
@@ -183,6 +169,9 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            // Show CSV content in the output textarea
+            document.getElementById('output').innerText = csvContent;
         }
 
         function closePopup() {
