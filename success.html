@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📂 Genesys Prompt Export 📂</title>
+    <title> Tykans GCX Config Utility </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,12 +24,6 @@
         #logo {
             height: 50px;
             margin-right: 10px;
-            animation: flip 1s infinite;
-        }
-
-        @keyframes flip {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
         }
 
         #title {
@@ -116,14 +110,25 @@
         #output th {
             background-color: #f3f3f3;
         }
+
+        #flipping-logo {
+            height: 50px;
+            animation: flip 1s infinite;
+            display: none;
+        }
+
+        @keyframes flip {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
     </style>
 </head>
 <body>
     <div id="header">
-        <img id="logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=2147483647&v=beta&t=gKclfImp9n7_jxYNpAgbgTCV33-QT1_WAEf_g_pinGg" alt="Tykans Logo">
-        <h1 id="title">📂 Genesys Prompt Export 📂</h1>
+        <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
+        <h1 id="title"> Genesys Prompt Export </h1>
     </div>
-    <textarea id="output" rows="10" readonly></textarea>
+    <div id="output"></div>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
@@ -134,6 +139,8 @@
         </div>
     </div>
 
+    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=2147483647&v=beta&t=gKclfImp9n7_jxYNpAgbgTCV33-QT1_WAEf_g_pinGg" alt="Flipping Logo">
+    
     <script>
         async function fetchAllPromptData(token, nextPage) {
             let allEntities = [];
@@ -211,6 +218,16 @@
 
         function closePopup() {
             document.getElementById('popupContainer').style.display = 'none';
+        }
+
+        // Show flipping logo while waiting for CSV content to display
+        function showFlippingLogo() {
+            document.getElementById('flipping-logo').style.display = 'block';
+        }
+
+        // Hide flipping logo when CSV content is displayed
+        function hideFlippingLogo() {
+            document.getElementById('flipping-logo').style.display = 'none';
         }
     </script>
 </body>
