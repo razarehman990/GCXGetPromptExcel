@@ -131,7 +131,7 @@
 
                 const { entities, nextUri } = await response.json();
                 allEntities = [...allEntities, ...entities];
-                nextPage = nextUri ? `https://api.cac1.pure.cloud/${nextUri}` : null;
+                nextPage = nextUri ? `https://api.cac1.pure.cloud${nextUri}` : null;
             }
 
             return allEntities;
