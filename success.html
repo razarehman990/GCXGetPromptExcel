@@ -114,30 +114,26 @@
     </div>
 
     <script>
-        async function fetchAllPromptData(token) {
-            let allData = [];
-            let currentPage = 1;
-            let totalPages = 1;
-
-            while (currentPage <= totalPages) {
-                const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch data: ${response.status}`);
+        async function fetchAllPromptData(token, currentPage = 1) {
+            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
+            });
 
-                const { entities, totalPages: total } = await response.json();
-                allData = [...allData, ...entities];
-                totalPages = total;
-                currentPage++;
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data: ${response.status}`);
             }
 
-            return allData;
+            const { entities, totalPages } = await response.json();
+
+            if (currentPage < totalPages) {
+                const nextData = await fetchAllPromptData(token, currentPage + 1);
+                return [...entities, ...nextData];
+            }
+
+            return entities;
         }
 
         async function generateCSV(token) {
