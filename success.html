@@ -137,7 +137,7 @@ async function generateCSV(token) {
             const language = resource.language || '';
             const ttsString = resource.ttsString || '';
             const mediaUri = resource.mediaUri || '';
-            const fileName = `${name}.wav`;
+            const fileName = mediaUri ? `${name}.wav` : '';
             csvContent += `"${name}","user","${language}","${description}","${ttsString}","${mediaUri}","${fileName}"\n`;
         }
     }
