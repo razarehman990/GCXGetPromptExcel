@@ -114,9 +114,8 @@
     </div>
 
     <script>
-        async function fetchAllPromptData(token, currentPage = 1) {
+        async function fetchAllPromptData(token, nextPage) {
             let allEntities = [];
-            let nextPage = `https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500`;
 
             while (nextPage) {
                 const response = await fetch(nextPage, {
@@ -130,7 +129,7 @@
                     throw new Error(`Failed to fetch data: ${response.status}`);
                 }
 
-                const { entities, nextPage: nextUri } = await response.json();
+                const { entities, nextUri } = await response.json();
                 allEntities = [...allEntities, ...entities];
                 nextPage = nextUri;
             }
@@ -139,7 +138,7 @@
         }
 
         async function generateCSV(token) {
-            const data = await fetchAllPromptData(token);
+            const data = await fetchAllPromptData(token, 'https://api.cac1.pure.cloud/api/v2/architect/prompts?pageSize=500');
 
             if (data.length === 0) {
                 alert('No data found.');
