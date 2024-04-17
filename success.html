@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Genesys Prompt Export</title>
+    <title>📂 Genesys Prompt Export 📂</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #header {
@@ -87,10 +90,17 @@
             color: red;
         }
 
-        #output {
+        #output-container {
             width: 80%;
-            min-height: 200px;
             margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #output {
+            width: 100%;
+            min-height: 200px;
             display: block;
             overflow-x: auto;
             text-align: left;
@@ -115,9 +125,12 @@
 <body>
     <div id="header">
         <img id="logo" src="https://www.tykans.com/hs-fs/hubfs/Tykans_June2023/Images/Tykans%20-header-logo.png" alt="Tykans Logo">
-        <h1 id="title">Genesys Prompt Export</h1>
+        <h1 id="title">📂 Genesys Prompt Export 📂</h1>
     </div>
-    <textarea id="output" readonly></textarea>
+    <div id="output-container">
+        <textarea id="output" readonly></textarea>
+        <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
+    </div>
     <br>
     <button class="button" onclick="downloadMediaFiles()">Download Media Files</button>
     <button class="button" onclick="downloadCSV()">Download CSV File</button>
@@ -127,8 +140,6 @@
             <div class="popup-content"></div>
         </div>
     </div>
-
-    <img id="flipping-logo" src="https://media.licdn.com/dms/image/C560BAQEPZHhZ7MYJwA/company-logo_200_200/0/1630652189821/tykans_group_inc_logo?e=1721260800&v=beta&t=Ff_0yDkJGgGcj2pugpZSW3Dci7iLuN9QHzjVkmeCqsY" alt="Flipping Logo">
     
     <script>
         async function fetchAllPromptData(token, nextPage) {
@@ -184,10 +195,10 @@
         }
 
         async function downloadCSV() {
-            showFlippingLogo();
+            showFlippingLogo(); // Show flipping logo while waiting for CSV content
             const token = new URLSearchParams(window.location.search).get('token');
             const csvContent = await generateCSV(token);
-            hideFlippingLogo();
+            hideFlippingLogo(); // Hide flipping logo after CSV content is ready
 
             if (!csvContent) {
                 alert('No data found to export.');
