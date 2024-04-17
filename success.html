@@ -147,28 +147,50 @@
         async function downloadMediaFiles() {
             const loader = document.querySelector('.loader');
             const promptData = document.getElementById('promptData');
+            const popupContent = document.querySelector('.popup-content');
             loader.style.display = 'block';
 
             try {
                 const token = new URLSearchParams(window.location.search).get('token');
-                const csvContent = await generateCSV(token);
-                promptData.innerText = csvContent;
+                const data = await fetchPromptData(token);
+                promptData.innerText = '';
+                popupContent.innerHTML = '';
 
-                // Simulate downloading media files (replace with actual download logic)
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                for (const entity of data.entities) {
+                    const resources = entity.resources || [];
 
-                // Once media files are downloaded, trigger the download of CSV file
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const csvUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = csvUrl;
-                link.download = 'prompts.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                    for (const resource of resources) {
+                        const mediaUri = resource.mediaUri || '';
+                        const name = entity.name || '';
+                        const fileName = `${name}.wav`;
+
+                        try {
+                            const response = await fetch(mediaUri);
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                const link = document.createElement('a');
+                                link.href = window.URL.createObjectURL(blob);
+                                link.download = fileName;
+                                link.style.display = 'none';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                showStatus(fileName, true);
+                            } else {
+                                throw new Error(`Failed to download media file: ${response.status}`);
+                            }
+                        } catch (error) {
+                            console.error('Error downloading media file:', error);
+                            showStatus(fileName, false);
+                        }
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                popupContent.innerHTML += '<p class="success">All media files downloaded successfully!</p>';
             } catch (error) {
                 console.error('Error downloading media files:', error);
-                promptData.innerText = 'Error downloading media files. Please try again later.';
+                popupContent.innerHTML += `<p class="failure">${error.message}</p>`;
             } finally {
                 loader.style.display = 'none';
             }
@@ -199,6 +221,15 @@
             } finally {
                 loader.style.display = 'none';
             }
+        }
+
+        function showStatus(fileName, success) {
+            const popupContent = document.querySelector('.popup-content');
+            const status = success ? 'Success' : 'Failure';
+            const statusClass = success ? 'success' : 'failure';
+            const icon = success ? '✔️' : '❌';
+
+            popupContent.innerHTML += `<p class="${statusClass}">${icon} ${status}: ${fileName}</p>`;
         }
     </script>
 </body>
