@@ -126,27 +126,27 @@
                 throw new Error(`Failed to fetch data: ${response.status}`);
             }
 
-            const { entities, totalPages } = await response.json();
-
-            if (currentPage < totalPages) {
-                const nextData = await fetchAllPromptData(token, currentPage + 1);
-                return [...entities, ...nextData];
-            }
-
-            return entities;
+            return await response.json();
         }
 
         async function generateCSV(token) {
-            const data = await fetchAllPromptData(token);
+            const firstPageData = await fetchAllPromptData(token);
+            const { totalPages } = firstPageData;
+            const entities = firstPageData.entities;
 
-            if (data.length === 0) {
+            for (let i = 2; i <= totalPages; i++) {
+                const nextPageData = await fetchAllPromptData(token, i);
+                entities.push(...nextPageData.entities);
+            }
+
+            if (entities.length === 0) {
                 alert('No data found.');
                 return;
             }
 
             let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
-            for (const entity of data) {
+            for (const entity of entities) {
                 const name = entity.name || '';
                 const type = 'user'; // Fixed value
                 const language = entity.resources[0].language || '';
