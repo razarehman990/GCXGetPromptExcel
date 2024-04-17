@@ -125,14 +125,13 @@
         }
 
         async function fetchAllPromptData(token) {
+            const firstResponse = await fetchPromptData(token, 1);
+            const totalPages = firstResponse.totalPages;
             let allEntities = [];
-            let currentPage = 1;
 
-            while (true) {
-                const data = await fetchPromptData(token, currentPage);
+            for (let page = 1; page <= totalPages; page++) {
+                const data = await fetchPromptData(token, page);
                 allEntities.push(...data.entities);
-                currentPage++;
-                if (currentPage > data.totalPages) break;
             }
 
             return allEntities;
