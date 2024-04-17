@@ -110,6 +110,7 @@
             position: absolute; /* Position the flipping logo relative to the output container */
             top: calc(50% - 25px); /* Center the flipping logo vertically */
             left: calc(50% - 25px); /* Center the flipping logo horizontally */
+            display: none; /* Initially hide the flipping logo */
         }
 
         @keyframes flip {
@@ -136,7 +137,7 @@
             <div class="popup-content"></div>
         </div>
     </div>
-
+    
     <script>
         async function fetchAllPromptData(token, nextPage) {
             let allEntities = [];
