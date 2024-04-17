@@ -115,20 +115,32 @@
 
     <script>
         async function fetchPromptData(token) {
-            const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=1&pageSize=500`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            return await response.json();
+            let allEntities = [];
+            let currentPage = 1;
+            let totalPages = 1;
+
+            while (currentPage <= totalPages) {
+                const response = await fetch(`https://api.cac1.pure.cloud/api/v2/architect/prompts?page=${currentPage}&pageSize=500`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                allEntities = [...allEntities, ...data.entities];
+                totalPages = data.totalPages;
+                currentPage++;
+            }
+
+            return allEntities;
         }
 
 async function generateCSV(token) {
     const data = await fetchPromptData(token);
     let csvContent = 'Name,Type,Language,Description,TtsString,MediaUri,FileName\n';
 
-    for (const entity of data.entities) {
+    for (const entity of data) {
         let name = entity.name || '';
         const type = 'user'; // Fixed value for Type
         let description = entity.description || ''; // Description from API output
@@ -157,10 +169,10 @@ async function generateCSV(token) {
             popupContent.innerHTML = '';
             const token = new URLSearchParams(window.location.search).get('token');
             const data = await fetchPromptData(token);
-            const fileCount = data.entities.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
+            const fileCount = data.reduce((acc, entity) => acc + (entity.resources || []).length, 0);
             let completed = 0;
 
-            for (const entity of data.entities) {
+            for (const entity of data) {
                 const resources = entity.resources || [];
 
                 for (const resource of resources) {
